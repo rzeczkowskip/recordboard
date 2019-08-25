@@ -1,0 +1,31 @@
+security:
+    encoders:
+        App\Security\AuthUser:
+            algorithm: auto
+
+    providers:
+        auth_user_provider:
+            id: App\Security\AuthUserProvider
+
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            pattern: ^/api/v1/
+            anonymous: true
+            stateless: true
+            json_login:
+                provider: auth_user_provider
+                check_path: app_user_auth
+                username_path: email
+                password_path: password
+            guard:
+                authenticators:
+                    - App\Security\ApiTokenAuthenticator
+
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/api/v1/user/(auth|register)$, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api/v1, roles: ROLE_USER }
