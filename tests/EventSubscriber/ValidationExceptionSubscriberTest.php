@@ -3,15 +3,22 @@
 namespace App\Tests\EventSubscriber;
 
 use App\EventSubscriber\ValidationExceptionSubscriber;
-use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Event\ConsoleErrorEvent;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\NullOutput;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Output\StreamOutput;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\Messenger\Exception\ValidationFailedException;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
-class ValidationExceptionSubscriberTest extends TestCase
+class ValidationExceptionSubscriberTest extends KernelTestCase
 {
     /**
      * @var \PHPUnit\Framework\MockObject\MockObject|SerializerInterface
@@ -32,7 +39,8 @@ class ValidationExceptionSubscriberTest extends TestCase
     {
         $events = ValidationExceptionSubscriber::getSubscribedEvents();
         $expected = [
-            'kernel.exception' => 'handleValidationFailedException',
+            'kernel.exception' => 'handleHttpValidationFailedException',
+            'console.error' => 'handleConsoleValidationFailedException',
         ];
 
         static::assertEquals($expected, $events);
@@ -48,7 +56,7 @@ class ValidationExceptionSubscriberTest extends TestCase
         }
     }
 
-    public function testHandleValidationFailedExceptionWithInvalidException(): void
+    public function testHandleHttpValidationFailedExceptionWithInvalidException(): void
     {
         $event = $this->createMock(GetResponseForExceptionEvent::class);
         $event
@@ -61,13 +69,13 @@ class ValidationExceptionSubscriberTest extends TestCase
             ->method('getRequest');
 
         $subscriber = new ValidationExceptionSubscriber($this->serializer);
-        $subscriber->handleValidationFailedException($event);
+        $subscriber->handleHttpValidationFailedException($event);
     }
 
     /**
      * @dataProvider handleValidationFailedExceptionProvider
      */
-    public function testHandleValidationFailedException(string $requestMethod, int $responseStatusCode): void
+    public function testHandleHttpValidationFailedException(string $requestMethod, int $responseStatusCode): void
     {
         $expectedJson = json_encode(['violations' => ['violation']]);
 
@@ -113,7 +121,7 @@ class ValidationExceptionSubscriberTest extends TestCase
             }));
 
         $subscriber = new ValidationExceptionSubscriber($this->serializer);
-        $subscriber->handleValidationFailedException($event);
+        $subscriber->handleHttpValidationFailedException($event);
     }
 
     public function handleValidationFailedExceptionProvider(): \Generator
@@ -132,5 +140,78 @@ class ValidationExceptionSubscriberTest extends TestCase
             'DELETE',
             403
         ];
+    }
+
+    public function testHandleConsoleValidationFailedExceptionWithInvalidException(): void
+    {
+        $exception = $this->createMock(NonValidationException::class);
+
+        $event = new ConsoleErrorEvent(
+            $this->createMock(InputInterface::class),
+            new NullOutput(),
+            $exception
+        );
+
+        $exception
+            ->expects(static::never())
+            ->method('getViolations');
+
+        $subscriber = new ValidationExceptionSubscriber($this->serializer);
+        $subscriber->handleConsoleValidationFailedException($event);
+    }
+
+    public function testHandleConsoleValidationFailedException(): void
+    {
+        $expectedOutput = <<<EOT
+[ERROR] Validation failed                                                                                              
+
+ ---------- --------- 
+  Property   Message  
+ ---------- --------- 
+  property   error    
+ ---------- ---------
+EOT;
+
+        $fp = fopen('php://temp', 'wb');
+
+        $exception = $this->createMock(ValidationFailedException::class);
+        $output = new StreamOutput($fp);
+
+        $violations = new ConstraintViolationList([
+            new ConstraintViolation(
+                'error',
+                null,
+                [],
+                null,
+                'property',
+                ''
+            ),
+        ]);
+
+        $event = new ConsoleErrorEvent(
+            $this->createMock(InputInterface::class),
+            $output,
+            $exception
+        );
+
+        $exception
+            ->expects(static::once())
+            ->method('getViolations')
+            ->willReturn($violations);
+
+        $subscriber = new ValidationExceptionSubscriber($this->serializer);
+        $subscriber->handleConsoleValidationFailedException($event);
+
+        rewind($fp);
+        $result = trim((string) stream_get_contents($fp));
+        fclose($fp);
+
+        static::assertEquals($expectedOutput, $result);
+    }
+}
+
+class NonValidationException extends \Exception {
+    public function getViolations(): void
+    {
     }
 }

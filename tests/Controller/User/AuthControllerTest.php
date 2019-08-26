@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\Controller;
+namespace App\Tests\Controller\User;
 
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;

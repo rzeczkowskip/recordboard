@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Exercise;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\Persistence\ObjectManager;
@@ -16,7 +17,10 @@ class AppFixtures extends Fixture
         'John Doe'
         );
 
+        $exercise = new Exercise('Deadlift', [Exercise::ATTRIBUTE_REP, Exercise::ATTRIBUTE_WEIGHT]);
+
         $manager->persist($user);
+        $manager->persist($exercise);
 
         $manager->flush();
     }
