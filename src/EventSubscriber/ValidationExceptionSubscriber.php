@@ -2,6 +2,9 @@
 
 namespace App\EventSubscriber;
 
+use Symfony\Component\Console\ConsoleEvents;
+use Symfony\Component\Console\Event\ConsoleErrorEvent;
+use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -9,6 +12,7 @@ use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Messenger\Exception\ValidationFailedException;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\ConstraintViolationInterface;
 
 class ValidationExceptionSubscriber implements EventSubscriberInterface
 {
@@ -22,11 +26,12 @@ class ValidationExceptionSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::EXCEPTION => 'handleValidationFailedException',
+            KernelEvents::EXCEPTION => 'handleHttpValidationFailedException',
+            ConsoleEvents::ERROR => 'handleConsoleValidationFailedException'
         ];
     }
 
-    public function handleValidationFailedException(GetResponseForExceptionEvent $event): void
+    public function handleHttpValidationFailedException(GetResponseForExceptionEvent $event): void
     {
         /** @var ValidationFailedException $exception */
         if (!($exception = $event->getException()) instanceof ValidationFailedException) {
@@ -46,6 +51,33 @@ class ValidationExceptionSubscriber implements EventSubscriberInterface
                 ),
                 $responseCode
             )
+        );
+    }
+
+    public function handleConsoleValidationFailedException(ConsoleErrorEvent $event): void
+    {
+        /** @var ValidationFailedException $exception */
+        if (!($exception = $event->getError()) instanceof ValidationFailedException) {
+            return;
+        }
+
+        $io = new SymfonyStyle($event->getInput(), $event->getOutput());
+
+        $io->error('Validation failed');
+
+        $violations = [];
+
+        /** @var ConstraintViolationInterface $violation */
+        foreach ($exception->getViolations() as $violation) {
+            $violations[] = [
+                $violation->getPropertyPath(),
+                $violation->getMessage(),
+            ];
+        }
+
+        $io->table(
+            ['Property', 'Message'],
+            $violations
         );
     }
 }
