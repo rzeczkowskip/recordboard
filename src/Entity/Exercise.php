@@ -6,7 +6,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Entity(repositoryClass="ExerciseRepository")
+ * @ORM\Entity(repositoryClass="App\Repository\ExerciseRepository")
  */
 class Exercise
 {

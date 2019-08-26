@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\Controller;
+namespace App\Tests\Controller\Exercise;
 
 use App\Entity\User;
 use App\Entity\UserApiToken;
@@ -8,7 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 /**
  * @group func
  */
-class MyProfileControllerTest extends WebTestCase
+class ListControllerTest extends WebTestCase
 {
     private string $token;
 
@@ -27,12 +27,18 @@ class MyProfileControllerTest extends WebTestCase
         $this->token = $token->getToken();
     }
 
+    protected function tearDown(): void
+    {
+        unset($this->token);
+        self::ensureKernelShutdown();
+    }
+
     public function testGetProfileWithApiKey(): void
     {
         $client = static::createClient();
         $client->xmlHttpRequest(
             'GET',
-            '/api/v1/user/me',
+            '/api/v1/exercises',
             [],
             [],
             [
@@ -49,8 +55,15 @@ class MyProfileControllerTest extends WebTestCase
 
         $resultArray = json_decode($resultJson, true);
         static::assertArrayHasKey('data', $resultArray);
-        static::assertArrayHasKey('id', $resultArray['data']);
-        static::assertArrayHasKey('name', $resultArray['data']);
-        static::assertArrayHasKey('email', $resultArray['data']);
+        static::assertIsArray($resultArray['data']);
+        static::assertCount(1, $resultArray['data']);
+
+        $exercise = reset($resultArray['data']);
+
+        static::assertArrayHasKey('id', $exercise);
+        static::assertArrayHasKey('name', $exercise);
+        static::assertArrayHasKey('attributes', $exercise);
+        static::assertIsArray($exercise['attributes']);
+
     }
 }
