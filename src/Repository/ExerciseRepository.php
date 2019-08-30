@@ -12,6 +12,18 @@ class ExerciseRepository extends ServiceEntityRepository
         parent::__construct($registry, Exercise::class);
     }
 
+    public function getExerciseById(string $id): \App\DTO\Exercise\Exercise
+    {
+        return $this->getEntityManager()
+            ->createQuery(sprintf(
+                'SELECT NEW %s(e.id, e.name, e.attributes) 
+                FROM App:Exercise e 
+                WHERE e.id = :id',
+                \App\DTO\Exercise\Exercise::class,
+            ))
+            ->setParameter('id', $id)
+            ->getSingleResult();
+    }
     /**
      * @return array|\App\DTO\Exercise\Exercise[]
      */

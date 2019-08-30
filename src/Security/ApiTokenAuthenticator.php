@@ -3,6 +3,7 @@
 namespace App\Security;
 
 use App\Repository\UserRepository;
+use Doctrine\ORM\NoResultException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -32,11 +33,15 @@ class ApiTokenAuthenticator extends AbstractGuardAuthenticator
         return substr($request->headers->get(self::AUTH_TOKEN_HEADER), 7);
     }
 
-    public function getUser($credentials, UserProviderInterface $userProvider): UserInterface
+    public function getUser($credentials, UserProviderInterface $userProvider): ?UserInterface
     {
-        $user = $this->userRepository->getUserByApiToken($credentials);
+        try {
+            $user = $this->userRepository->getUserByApiToken($credentials);
 
-        return $userProvider->loadUserByUsername($user->email);
+            return $userProvider->loadUserByUsername($user->email);
+        } catch (NoResultException $e) {
+            return null;
+        }
     }
 
     public function checkCredentials($credentials, UserInterface $user): bool
