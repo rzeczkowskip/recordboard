@@ -43,12 +43,14 @@ class ValidationExceptionSubscriber implements EventSubscriberInterface
             $responseCode = JsonResponse::HTTP_FORBIDDEN;
         }
 
+        $violationsJson = $this->serializer->serialize(
+            $exception->getViolations(),
+            'json'
+        );
+
         $event->setResponse(
             JsonResponse::fromJsonString(
-                $this->serializer->serialize(
-                    $exception->getViolations(),
-                    'json'
-                ),
+                $violationsJson,
                 $responseCode
             )
         );

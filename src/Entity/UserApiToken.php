@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 class UserApiToken
 {
     /**
-     * @ORM\ManyToOne(targetEntity="User", inversedBy="apiTokens")
+     * @ORM\ManyToOne(targetEntity="User")
      *
      * @var User
      */
