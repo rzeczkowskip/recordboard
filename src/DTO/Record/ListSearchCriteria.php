@@ -2,27 +2,24 @@
 namespace App\DTO\Record;
 
 use App\Entity\Exercise;
-use App\Entity\User;
-use App\Message\PaginationHelper;
+use App\Handler\PaginationHelper;
 
 class ListSearchCriteria
 {
-    public ?Exercise $exercise = null;
-
-    private User $user;
+    private Exercise $exercise;
     private int $queryOffset;
     private int $itemsPerPage;
 
-    public function __construct(User $user, PaginationHelper $pagination)
+    public function __construct(Exercise $exercise, PaginationHelper $pagination)
     {
-        $this->user = $user;
+        $this->exercise = $exercise;
         $this->queryOffset = $pagination->getQueryOffset();
         $this->itemsPerPage = $pagination->getItemsPerPage();
     }
 
-    public function getUser(): User
+    public function getExercise(): Exercise
     {
-        return $this->user;
+        return $this->exercise;
     }
 
     public function getQueryOffset(): int

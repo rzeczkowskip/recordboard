@@ -6,15 +6,13 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class AuthUser implements UserInterface
 {
-    private UuidInterface $id;
-    private string $username;
+    private string $id;
     private string $password;
     private array $roles;
 
-    public function __construct(UuidInterface $id, string $username, string $password, array $roles = [])
+    public function __construct(UuidInterface $id, string $password, array $roles = [])
     {
-        $this->id = $id;
-        $this->username = $username;
+        $this->id = $id->toString();
         $this->password = $password;
 
         if (!$roles) {
@@ -24,14 +22,14 @@ class AuthUser implements UserInterface
         $this->roles = $roles;
     }
 
-    public function getId(): UuidInterface
+    public function getId(): string
     {
         return $this->id;
     }
 
     public function getUsername(): string
     {
-        return $this->username;
+        return $this->id;
     }
 
     public function eraseCredentials(): void

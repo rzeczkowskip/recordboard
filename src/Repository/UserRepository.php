@@ -1,24 +1,25 @@
 <?php
 namespace App\Repository;
 
-use App\DTO\User\Profile;
-use App\Entity\User;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use App\Data\User\Profile;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
+use Ramsey\Uuid\UuidInterface;
 
-class UserRepository extends ServiceEntityRepository
+class UserRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($registry, User::class);
+        $this->em = $em;
     }
 
     public function getAuthData(string $username): array
     {
-        return $this->getEntityManager()
-            ->createQuery('SELECT PARTIAL u.{id,email,password} FROM App:User u WHERE u.email = :email')
-            ->setParameter('email', $username)
+        return $this->em
+            ->createQuery('SELECT PARTIAL u.{id,password} FROM App:User u WHERE u.email = :username OR u.id = :username')
+            ->setParameter('username', $username)
             ->getSingleResult(Query::HYDRATE_ARRAY);
     }
 
@@ -27,37 +28,38 @@ class UserRepository extends ServiceEntityRepository
         return $this->getProfileBy('email', $email);
     }
 
-    public function getProfileById(string $id): Profile
+    public function getProfileById(UuidInterface $id): Profile
     {
         return $this->getProfileBy('id', $id);
     }
 
-    public function getUserByApiToken(string $apiToken): \App\DTO\User\User
+    public function getUserByApiToken(string $apiToken): \App\Data\User\User
     {
-        return $this->getEntityManager()
-            ->createQuery(sprintf(
-                <<<SQL
-                SELECT NEW %s(u.id, u.email, u.name) 
-                FROM App:UserApiToken t 
-                JOIN t.user u
-                WHERE t.token = :token
-                SQL,
-                \App\DTO\User\User::class
-            ))
+        $query = sprintf('SELECT NEW %s(u.id, u.email, u.name) 
+            FROM App:UserApiToken t 
+            JOIN t.user u
+            WHERE t.token = :token',
+            \App\Data\User\User::class
+        );
+
+        return $this->em
+            ->createQuery($query)
             ->setParameter('token', $apiToken)
             ->getSingleResult();
     }
 
     private function getProfileBy(string $field, string $value): Profile
     {
-        return $this->getEntityManager()
-            ->createQuery(sprintf(
-                'SELECT NEW %s(u.id, u.email, u.name) 
+        $query = sprintf(
+            'SELECT NEW %s(u.id, u.email, u.name) 
                 FROM App:User u 
                 WHERE u.%s = :value',
-                Profile::class,
-                $field
-            ))
+            Profile::class,
+            $field
+        );
+
+        return $this->em
+            ->createQuery($query)
             ->setParameter('value', $value)
             ->getSingleResult();
     }

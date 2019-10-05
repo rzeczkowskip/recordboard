@@ -2,15 +2,16 @@
 
 namespace App\EventSubscriber;
 
+use App\Exception\ValidationException;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleErrorEvent;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
-use Symfony\Component\Messenger\Exception\ValidationFailedException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
@@ -26,40 +27,42 @@ class ValidationExceptionSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            KernelEvents::EXCEPTION => 'handleHttpValidationFailedException',
-            ConsoleEvents::ERROR => 'handleConsoleValidationFailedException'
+            KernelEvents::EXCEPTION => 'handleHttpValidationException',
+            ConsoleEvents::ERROR => 'handleConsoleValidationException'
         ];
     }
 
-    public function handleHttpValidationFailedException(GetResponseForExceptionEvent $event): void
+    public function handleHttpValidationException(GetResponseForExceptionEvent $event): void
     {
-        /** @var ValidationFailedException $exception */
-        if (!($exception = $event->getException()) instanceof ValidationFailedException) {
+        /** @var ValidationException $exception */
+        if (!($exception = $event->getException()) instanceof ValidationException) {
             return;
         }
 
+        $request = $event->getRequest();
+
         $responseCode = JsonResponse::HTTP_UNPROCESSABLE_ENTITY;
-        if ($event->getRequest()->getMethod() === Request::METHOD_DELETE) {
+        if ($request->getMethod() === Request::METHOD_DELETE) {
             $responseCode = JsonResponse::HTTP_FORBIDDEN;
         }
 
+        $violations = $exception->getViolations();
+
         $violationsJson = $this->serializer->serialize(
-            $exception->getViolations(),
-            'json'
+            $violations,
+            $request->getRequestFormat()
         );
 
-        $event->setResponse(
-            JsonResponse::fromJsonString(
-                $violationsJson,
-                $responseCode
-            )
-        );
+        $response = new Response($violationsJson, $responseCode);
+        $response->prepare($request);
+
+        $event->setResponse($response);
     }
 
-    public function handleConsoleValidationFailedException(ConsoleErrorEvent $event): void
+    public function handleConsoleValidationException(ConsoleErrorEvent $event): void
     {
-        /** @var ValidationFailedException $exception */
-        if (!($exception = $event->getError()) instanceof ValidationFailedException) {
+        /** @var ValidationException $exception */
+        if (!($exception = $event->getError()) instanceof ValidationException) {
             return;
         }
 

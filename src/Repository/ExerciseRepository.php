@@ -2,39 +2,56 @@
 namespace App\Repository;
 
 use App\Entity\Exercise;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
+use Ramsey\Uuid\UuidInterface;
 
-class ExerciseRepository extends ServiceEntityRepository
+class ExerciseRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private EntityManagerInterface $em;
+
+    public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($registry, Exercise::class);
+        $this->em = $em;
     }
 
-    public function getExerciseById(string $id): \App\DTO\Exercise\Exercise
+    public function findById(UuidInterface $id): ?Exercise
     {
-        return $this->getEntityManager()
-            ->createQuery(sprintf(
-                'SELECT NEW %s(e.id, e.name, e.attributes) 
+        return $this->em->find(Exercise::class, $id);
+    }
+
+    public function getExerciseData(UuidInterface $exercise): \App\Data\Exercise\Exercise
+    {
+        $query = sprintf(
+            'SELECT NEW %s(e.id, e.name, e.attributes) 
                 FROM App:Exercise e 
-                WHERE e.id = :id',
-                \App\DTO\Exercise\Exercise::class,
-            ))
-            ->setParameter('id', $id)
+                WHERE e.id = :exercise',
+            \App\Data\Exercise\Exercise::class,
+        );
+
+        return $this->em
+            ->createQuery($query)
+            ->setParameter('exercise', $exercise)
             ->getSingleResult();
     }
     /**
-     * @return array|\App\DTO\Exercise\Exercise[]
+     * @return array|\App\Data\Exercise\Exercise[]
      */
-    public function getExercisesList(): array
+    public function getExercisesList(?UuidInterface $user = null): array
     {
-        $qb = $this->createQueryBuilder('e');
-
-        $qb->select(sprintf(
+        $select = sprintf(
             'NEW %s(e.id, e.name, e.attributes)',
-            \App\DTO\Exercise\Exercise::class
-        ));
+            \App\Data\Exercise\Exercise::class
+        );
+
+        $qb = $this->em->createQueryBuilder();
+
+        $qb->select($select);
+        $qb->from(Exercise::class, 'e');
+
+        if ($user) {
+            $qb->where('e.user = :user');
+            $qb->setParameter('user', $user);
+        }
 
         $qb->orderBy('e.name', 'ASC');
 

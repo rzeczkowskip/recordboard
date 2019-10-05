@@ -1,13 +1,14 @@
 <?php
 namespace App\Tests\Repository;
 
-use App\DTO\User\Profile;
+use App\Data\User\Profile;
 use App\Entity\User;
 use App\Entity\UserApiToken;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query;
+use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
@@ -20,7 +21,7 @@ class UserRepositoryTest extends KernelTestCase
     {
         $kernel = static::bootKernel();
         $this->em = $kernel->getContainer()->get('doctrine')->getManager();
-        $this->repository = $this->em->getRepository(User::class);
+        $this->repository = self::$container->get(UserRepository::class);
     }
 
     protected function tearDown(): void
@@ -33,11 +34,10 @@ class UserRepositoryTest extends KernelTestCase
     {
         $result = $this->repository->getAuthData('admin@example.com');
 
+        static::assertCount(2, $result);
         static::assertArrayHasKey('id', $result);
-        static::assertArrayHasKey('email', $result);
         static::assertArrayHasKey('password', $result);
 
-        static::assertEquals('admin@example.com', $result['email']);
         static::assertEquals('$argon2id$v=19$m=65536,t=4,p=1$bvEeQQRc3jztvvoslXCJuA$SBW1oAFjSdasyHcJEJApD9VxNY8J39EY/1YQceVvk7s', $result['password']);
         static::assertInstanceOf(UuidInterface::class, $result['id']);
     }
@@ -71,7 +71,7 @@ class UserRepositoryTest extends KernelTestCase
             ->setMaxResults(1)
             ->getSingleScalarResult();
 
-        $result = $this->repository->getProfileById($id->toString());
+        $result = $this->repository->getProfileById($id);
 
         static::assertInstanceOf(Profile::class, $result);
         static::assertEquals('admin@example.com', $result->email);
@@ -82,7 +82,7 @@ class UserRepositoryTest extends KernelTestCase
     public function testGetProfileByIdThrowsExceptionIfNoResult(): void
     {
         $this->expectException(NoResultException::class);
-        $this->repository->getProfileById('invalid');
+        $this->repository->getProfileById(Uuid::uuid4());
     }
 
     public function testGetUserByApiToken(): void
@@ -98,7 +98,7 @@ class UserRepositoryTest extends KernelTestCase
 
         $result = $this->repository->getUserByApiToken($token->getToken());
 
-        static::assertInstanceOf(\App\DTO\User\User::class, $result);
+        static::assertInstanceOf(\App\Data\User\User::class, $result);
         static::assertEquals($user['email'], $result->email);
         static::assertEquals($user['name'], $result->name);
         static::assertEquals($user['id'], $result->id);

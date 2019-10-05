@@ -1,14 +1,11 @@
 <?php
 namespace App\Controller\User;
 
-use App\Message\User\RegisterUser;
-use App\Messenger\HandleTrait;
-use App\Messenger\Middleware\Configuration\SerializedRequestStamp;
+use App\Handler\User\RegisterUserHandler;
+use App\Http\RequestMapper;
+use App\DTO\User\RegisterUser;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Messenger\Envelope;
-use Symfony\Component\Messenger\MessageBusInterface;
-use Symfony\Component\Messenger\Stamp\ValidationStamp;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -16,27 +13,21 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class RegisterController
 {
-    use HandleTrait;
+    private RequestMapper $requestMapper;
+    private RegisterUserHandler $registerUserHandler;
 
-    private MessageBusInterface $messageBus;
-
-    public function __construct(MessageBusInterface $messageBus)
+    public function __construct(RequestMapper $requestMapper, RegisterUserHandler $registerUserHandler)
     {
-        $this->messageBus = $messageBus;
+        $this->requestMapper = $requestMapper;
+        $this->registerUserHandler = $registerUserHandler;
     }
 
     public function __invoke(Request $request)
     {
-        $this->handle(
-            new Envelope(
-                new RegisterUser(),
-                [
-                    new ValidationStamp([]),
-                    new SerializedRequestStamp($request->getContent()),
-                ]
-            ),
-            $this->messageBus
-        );
+        $data = new RegisterUser();
+        $this->requestMapper->mapToObject($request, $data);
+
+        $this->registerUserHandler->register($data);
 
         return new Response('', Response::HTTP_CREATED);
     }

@@ -2,8 +2,9 @@
 
 namespace App\Validator\Constraints;
 
+use App\Entity\Exercise;
 use App\Repository\ExerciseRepository;
-use Doctrine\ORM\NoResultException;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Validator\Constraint;
@@ -15,12 +16,10 @@ class RecordValuesValidator extends ConstraintValidator
 {
     private ExerciseRepository $exerciseRepository;
     private ?PropertyAccessorInterface $propertyAccessor;
-    private ?Assert\CollectionValidator $collectionValidator;
 
-    public function __construct(ExerciseRepository $exerciseRepository, ?Assert\CollectionValidator $collectionValidator = null, ?PropertyAccessorInterface $propertyAccessor = null)
+    public function __construct(ExerciseRepository $exerciseRepository, ?PropertyAccessorInterface $propertyAccessor = null)
     {
         $this->exerciseRepository = $exerciseRepository;
-        $this->collectionValidator = $collectionValidator;
         $this->propertyAccessor = $propertyAccessor;
     }
 
@@ -30,16 +29,20 @@ class RecordValuesValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, RecordValues::class);
         }
 
-        $exerciseId = $this->getPropertyAccessor()->getValue($this->context->getObject(), $constraint->exercise);
+        /** @var Exercise $exercise */
+        $exercise = $this->getPropertyAccessor()->getValue($this->context->getObject(), $constraint->exercise);
+        if ($exercise instanceof UuidInterface) {
+            $exercise = $this->exerciseRepository->findById($exercise);
+        }
 
-        try {
-            $exercise = $this->exerciseRepository->getExerciseById((string) $exerciseId);
-        } catch (NoResultException $e) {
-            return;
+        if (!$exercise instanceof Exercise) {
+            throw new UnexpectedTypeException(
+                is_object($exercise) ? get_class($exercise) : gettype($exercise), Exercise::class
+            );
         }
 
         $collectionFields = [];
-        foreach ($exercise->attributes as $attribute) {
+        foreach ($exercise->getAttributes() as $attribute) {
             $collectionFields[$attribute] = [
                 new Assert\NotBlank(),
                 new Assert\Type('integer'),
@@ -51,10 +54,10 @@ class RecordValuesValidator extends ConstraintValidator
         $options['fields'] = $collectionFields;
         $collectionConstraint = new Assert\Collection($options);
 
-        $validator = $this->getValidator();
-
-        $validator->initialize($this->context);
-        $validator->validate($value, $collectionConstraint);
+        $this->context->getValidator()->validate(
+            $value,
+            $collectionConstraint
+        );
     }
 
     private function getPropertyAccessor(): PropertyAccessorInterface
@@ -64,14 +67,5 @@ class RecordValuesValidator extends ConstraintValidator
         }
 
         return $this->propertyAccessor;
-    }
-
-    private function getValidator(): Assert\CollectionValidator
-    {
-        if (!isset($this->collectionValidator)) {
-            $this->collectionValidator = new Assert\CollectionValidator();
-        }
-
-        return $this->collectionValidator;
     }
 }

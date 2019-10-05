@@ -1,9 +1,9 @@
 <?php
 namespace App\Controller\User;
 
-use App\Messenger\HandleTrait;
+use App\Http\JsonResponse;
 use App\Repository\UserRepository;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -13,8 +13,6 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class MyProfileController
 {
-    use HandleTrait;
-
     private UserRepository $userRepository;
 
     public function __construct(UserRepository $userRepository)
@@ -24,7 +22,9 @@ class MyProfileController
 
     public function __invoke(Request $request, UserInterface $authUser): JsonResponse
     {
-        $user = $this->userRepository->getProfileByEmail($authUser->getUsername());
+        $user = $this->userRepository->getProfileById(
+            Uuid::fromString($authUser->getUsername())
+        );
 
         return new JsonResponse([
             'data' => $user,

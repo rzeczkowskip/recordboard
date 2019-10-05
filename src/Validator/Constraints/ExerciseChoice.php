@@ -9,4 +9,5 @@ use Symfony\Component\Validator\Constraints\Choice;
  */
 class ExerciseChoice extends Choice
 {
+    public ?string $user = null;
 }
