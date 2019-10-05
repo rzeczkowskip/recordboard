@@ -2,18 +2,20 @@
 
 namespace App\Tests\Validator\Constraints;
 
-use App\DTO\Exercise\Exercise;
+use App\Entity\Exercise;
+use App\Entity\User;
 use App\Repository\ExerciseRepository;
 use App\Validator\Constraints\RecordValues;
 use App\Validator\Constraints\RecordValuesValidator;
-use Doctrine\ORM\NoResultException;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RecordValuesValidatorTest extends TestCase
 {
@@ -23,20 +25,25 @@ class RecordValuesValidatorTest extends TestCase
     private ExerciseRepository $exerciseRepository;
 
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|Assert\CollectionValidator
-     */
-    private Assert\CollectionValidator $collectionValidator;
-
-    /**
      * @var \PHPUnit\Framework\MockObject\MockObject|ExecutionContextInterface
      */
     private ExecutionContextInterface $executionContext;
 
+    /**
+     * @var \PHPUnit\Framework\MockObject\MockObject|ValidatorInterface
+     */
+    private ValidatorInterface $validator;
+
     protected function setUp(): void
     {
         $this->exerciseRepository = $this->createMock(ExerciseRepository::class);
-        $this->collectionValidator = $this->createMock(Assert\CollectionValidator::class);
         $this->executionContext = $this->createMock(ExecutionContextInterface::class);
+
+        $this->validator = $this->createMock(ValidatorInterface::class);
+
+        $this->executionContext
+            ->method('getValidator')
+            ->willReturn($this->validator);
     }
 
     protected function tearDown(): void
@@ -50,7 +57,7 @@ class RecordValuesValidatorTest extends TestCase
 
         $this->expectException(UnexpectedTypeException::class);
 
-        $validator = new RecordValuesValidator($this->exerciseRepository, $this->collectionValidator);
+        $validator = new RecordValuesValidator($this->exerciseRepository);
         $validator->validate(null, $constraint);
     }
 
@@ -64,7 +71,7 @@ class RecordValuesValidatorTest extends TestCase
             ->method('getObject')
             ->willReturn($object);
 
-        $validator = new RecordValuesValidator($this->exerciseRepository, $this->collectionValidator);
+        $validator = new RecordValuesValidator($this->exerciseRepository);
         $validator->initialize($this->executionContext);
 
         $this->expectException(NoSuchPropertyException::class);
@@ -74,11 +81,11 @@ class RecordValuesValidatorTest extends TestCase
 
     public function testSkipValidationIfNoExerciseAvailable(): void
     {
-        $exerciseId = 'test';
+        $exerciseId = Uuid::uuid4();
 
         $constraint = new RecordValues();
         $object = new class {
-            public string $exercise;
+            public UuidInterface $exercise;
         };
         $object->exercise = $exerciseId;
 
@@ -89,16 +96,18 @@ class RecordValuesValidatorTest extends TestCase
 
         $this->exerciseRepository
             ->expects(static::once())
-            ->method('getExerciseById')
+            ->method('findById')
             ->with($exerciseId)
-            ->willThrowException(new NoResultException());
+            ->willReturn(null);
 
-        $this->collectionValidator
+        $this->executionContext
             ->expects(static::never())
-            ->method('validate');
+            ->method('getValidator');
 
-        $validator = new RecordValuesValidator($this->exerciseRepository, $this->collectionValidator);
+        $validator = new RecordValuesValidator($this->exerciseRepository);
         $validator->initialize($this->executionContext);
+
+        $this->expectException(UnexpectedTypeException::class);
 
         $validator->validate($object, $constraint);
     }
@@ -107,11 +116,14 @@ class RecordValuesValidatorTest extends TestCase
     {
         $exerciseId = Uuid::uuid4();
         $attributes = ['rep', 'time'];
-        $exercise = new Exercise($exerciseId, '', $attributes);
+        $exercise = new Exercise(
+            new User('', '', ''),
+            '',
+            $attributes);
 
         $constraint = new RecordValues();
         $object = new class {
-            public string $exercise;
+            public UuidInterface $exercise;
         };
         $object->exercise = $exerciseId;
 
@@ -122,16 +134,11 @@ class RecordValuesValidatorTest extends TestCase
 
         $this->exerciseRepository
             ->expects(static::once())
-            ->method('getExerciseById')
+            ->method('findById')
             ->with($exerciseId)
             ->willReturn($exercise);
 
-        $this->collectionValidator
-            ->expects(static::once())
-            ->method('initialize')
-            ->with($this->executionContext);
-
-        $this->collectionValidator
+        $this->validator
             ->expects(static::once())
             ->method('validate')
             ->with(
@@ -139,7 +146,7 @@ class RecordValuesValidatorTest extends TestCase
                 static::isInstanceOf(Assert\Collection::class)
             );
 
-        $validator = new RecordValuesValidator($this->exerciseRepository, $this->collectionValidator);
+        $validator = new RecordValuesValidator($this->exerciseRepository);
         $validator->initialize($this->executionContext);
 
         $validator->validate($object, $constraint);

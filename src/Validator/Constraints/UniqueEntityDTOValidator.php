@@ -3,6 +3,7 @@
 namespace App\Validator\Constraints;
 
 use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PropertyAccess\PropertyAccess;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Validator\Constraint;
@@ -39,6 +40,7 @@ class UniqueEntityDTOValidator extends ConstraintValidator
             $entityClass = get_class($entity);
         }
 
+        /** @var EntityManagerInterface $em */
         $em = $this->registry->getManagerForClass($entityClass);
         if (!$em) {
             throw new ConstraintDefinitionException(sprintf(
@@ -47,17 +49,28 @@ class UniqueEntityDTOValidator extends ConstraintValidator
             ));
         }
 
-        $repository = $em->getRepository($entityClass);
+        $qb = $em->createQueryBuilder()
+            ->select('e')
+            ->from($entityClass, 'e');
 
-        $result = $repository->findBy($fields);
+        foreach ($fields as $field => $value) {
+            $qb->andWhere(sprintf(
+                'e.%1$s = :%1$s',
+                $field
+            ));
+        }
+
+        $qb->setParameters($fields);
+        $result = $qb->getQuery()->getResult();
+
         if (count($result) === 0 || (count($result) === 1 && $entity && reset($result) === $entity)) {
             return;
         }
 
-        $this->context->buildViolation($constraint->message)
-            ->atPath($constraint->errorPath)
-            ->setCode($constraint::NOT_UNIQUE_ERROR)
-            ->addViolation();
+        $violationBuilder = $this->context->buildViolation($constraint->message);
+        $violationBuilder->atPath($constraint->errorPath);
+        $violationBuilder->setCode($constraint::NOT_UNIQUE_ERROR);
+        $violationBuilder->addViolation();
     }
 
     private function getPropertyAccessor(): PropertyAccessorInterface

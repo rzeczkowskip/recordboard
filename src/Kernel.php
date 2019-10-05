@@ -52,13 +52,4 @@ class Kernel extends BaseKernel
         $routes->import($confDir.'/{routes}/*'.self::CONFIG_EXTS, '/', 'glob');
         $routes->import($confDir.'/{routes}'.self::CONFIG_EXTS, '/', 'glob');
     }
-
-    protected function build(ContainerBuilder $container)
-    {
-        $container
-            ->registerForAutoconfiguration(PreprocessorInterface::class)
-            ->addTag('app.messenger.preprocessor');
-
-        $container->addCompilerPass(new MessengerPreprocessorPass());
-    }
 }

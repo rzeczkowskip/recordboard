@@ -4,19 +4,11 @@ namespace App\Validator\Constraints;
 
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints\Choice;
-use Symfony\Component\Validator\Constraints\ChoiceValidator;
 use Symfony\Component\Validator\ConstraintValidator;
 use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 abstract class AbstractDynamicChoiceValidator extends ConstraintValidator
 {
-    private ?ChoiceValidator $choiceValidator;
-
-    public function __construct(?ChoiceValidator $choiceValidator = null)
-    {
-        $this->choiceValidator = $choiceValidator;
-    }
-
     public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof Choice) {
@@ -25,11 +17,20 @@ abstract class AbstractDynamicChoiceValidator extends ConstraintValidator
 
         $constraint->choices = $this->getChoices($value, $constraint);
 
-        $validator = $this->getChoiceValidator();
-        $validator->initialize($this->context);
-        $validator->validate(
+        $allowedOptions = get_class_vars(Choice::class);
+        $options = array_filter(
+            get_object_vars($constraint),
+            static function ($key) use ($allowedOptions) {
+                return array_key_exists($key, $allowedOptions);
+            },
+            ARRAY_FILTER_USE_KEY
+        );
+        $choiceConstraint = new Choice($options);
+        $choiceConstraint->groups = $constraint->groups;
+
+        $this->context->getValidator()->validate(
             $this->getRealValue($value),
-            $constraint
+            $choiceConstraint
         );
     }
 
@@ -43,15 +44,6 @@ abstract class AbstractDynamicChoiceValidator extends ConstraintValidator
     protected function getRealValue($value)
     {
         return $value;
-    }
-
-    private function getChoiceValidator(): ChoiceValidator
-    {
-        if (!isset($this->choiceValidator)) {
-            $this->choiceValidator = new ChoiceValidator();
-        }
-
-        return $this->choiceValidator;
     }
 
     abstract protected function getChoices($value, Choice $constraint): array;

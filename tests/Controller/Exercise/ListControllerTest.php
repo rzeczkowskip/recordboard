@@ -16,9 +16,10 @@ class ListControllerTest extends WebTestCase
     {
         $kernel = static::bootKernel();
         $em = $kernel->getContainer()->get('doctrine')->getManager();
-        $repository = $em->getRepository(User::class);
 
-        $user = $repository->findOneBy(['email' => 'admin@example.com']);
+        $user = $em->createQuery('SELECT u FROM App:User u WHERE u.email = :email')
+            ->setParameter('email', 'admin@example.com')
+            ->getSingleResult();
         $token = new UserApiToken($user);
 
         $em->persist($token);
@@ -30,10 +31,9 @@ class ListControllerTest extends WebTestCase
     protected function tearDown(): void
     {
         unset($this->token);
-        self::ensureKernelShutdown();
     }
 
-    public function testGetProfileWithApiKey(): void
+    public function testGetExercises(): void
     {
         $client = static::createClient();
         $client->xmlHttpRequest(

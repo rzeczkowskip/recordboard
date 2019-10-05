@@ -22,7 +22,7 @@ class AuthUserProvider implements UserProviderInterface
         try {
             $user = $this->userRepository->getAuthData($username);
 
-            return new AuthUser($user['id'], $user['email'], $user['password']);
+            return new AuthUser($user['id'], $user['password']);
         } catch (NoResultException $e) {
             throw new UsernameNotFoundException(sprintf(
                 'User %s not found',

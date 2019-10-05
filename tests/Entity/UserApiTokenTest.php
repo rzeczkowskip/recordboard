@@ -8,9 +8,6 @@ use PHPUnit\Framework\TestCase;
 
 class UserApiTokenTest extends TestCase
 {
-    /**
-     * @
-     */
     public function testTokenHas32Chars()
     {
         $user = new User('', '', '');

@@ -3,4 +3,3 @@ controllers:
     type: annotation
     prefix: /api/v1
     format: json
-

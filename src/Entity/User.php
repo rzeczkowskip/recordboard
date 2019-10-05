@@ -7,7 +7,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * @ORM\Entity()
  */
 class User
 {
@@ -46,11 +46,10 @@ class User
         $this->email = $email;
         $this->password = $password;
         $this->name = $name;
-        $this->apiTokens = new ArrayCollection();
     }
 
-    public function generateApiToken(?\DateTimeInterface $expiresAt = null): UserApiToken
+    public function getId(): UuidInterface
     {
-        return new UserApiToken($this, $expiresAt);
+        return $this->id;
     }
 }

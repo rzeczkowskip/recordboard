@@ -37,7 +37,6 @@ class AuthUserProviderTest extends TestCase
 
         $userAuthData = [
             'id' => $id,
-            'email' => $email,
             'password' => $password,
         ];
 
@@ -51,8 +50,7 @@ class AuthUserProviderTest extends TestCase
         $result = $provider->loadUserByUsername($email);
 
         static::assertInstanceOf(AuthUser::class, $result);
-        static::assertEquals($id, $result->getId());
-        static::assertEquals($email, $result->getUsername());
+        static::assertEquals($id->toString(), $result->getUsername());
         static::assertEquals($password, $result->getPassword());
     }
 
@@ -71,15 +69,15 @@ class AuthUserProviderTest extends TestCase
 
     public function testRefreshUser(): void
     {
-        $username = 'admin@example.com';
-        $user = new AuthUser(Uuid::uuid4(), $username, '');
+        $id = Uuid::uuid4();
+        $user = new AuthUser($id, '');
 
         $provider = $this->createPartialMock(AuthUserProvider::class, ['loadUserByUsername']);
 
         $provider
             ->expects(static::once())
             ->method('loadUserByUsername')
-            ->with($username)
+            ->with($id->toString())
             ->willReturn($user);
 
         $result = $provider->refreshUser($user);

@@ -4,11 +4,12 @@ namespace App\Tests\Validator\Constraints;
 
 use App\Validator\Constraints\UniqueEntityDTO;
 use App\Validator\Constraints\UniqueEntityDTOValidator;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\Common\Persistence\ObjectRepository;
+use Doctrine\ORM\AbstractQuery;
 use Doctrine\ORM\EntityManagerInterface;
-use Happyr\DoctrineSpecification\EntitySpecificationRepositoryInterface;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Validator\Constraint;
@@ -34,11 +35,17 @@ class UniqueEntityDTOValidatorTest extends TestCase
      */
     private UniqueEntityDTO $constraint;
 
+    /**
+     * @var QueryBuilder|\PHPUnit\Framework\MockObject\MockObject
+     */
+    private QueryBuilder $qb;
+
     public function setUp(): void
     {
         $this->registry = $this->createMock(ManagerRegistry::class);
         $this->propertyAccessor = $this->createMock(PropertyAccessorInterface::class);
         $this->constraint = new UniqueEntityDTO(['entityClass' => '']);
+        $this->qb = $this->createMock(QueryBuilder::class);
     }
 
     public function tearDown(): void
@@ -157,7 +164,7 @@ class UniqueEntityDTOValidatorTest extends TestCase
         $this->constraint->entityClass = $entityClass;
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $repository = $this->createMock(ObjectRepository::class);
+        $query = $this->createMock(AbstractQuery::class);
 
         $this->registry
             ->expects(static::once())
@@ -172,14 +179,35 @@ class UniqueEntityDTOValidatorTest extends TestCase
             ->willReturn($uniqueFields);
 
         $em
-            ->method('getRepository')
-            ->with($entityClass)
-            ->willReturn($repository);
+            ->method('createQueryBuilder')
+            ->willReturn($this->qb);
 
-        $repository
+        $this->qb
             ->expects(static::once())
-            ->method('findBy')
-            ->with($uniqueFields)
+            ->method('select')
+            ->willReturnSelf();
+
+        $this->qb
+            ->expects(static::once())
+            ->method('from')
+            ->with($entityClass)
+            ->willReturnSelf();
+
+        $this->qb
+            ->method('andWhere')
+            ->willReturnSelf();
+
+        $this->qb
+            ->expects(static::once())
+            ->method('setParameters')
+            ->with($uniqueFields);
+
+        $this->qb
+            ->method('getQuery')
+            ->willReturn($query);
+
+        $query
+            ->method('getResult')
             ->willReturn([]);
 
         $context = $this->createMock(ExecutionContextInterface::class);
@@ -219,7 +247,7 @@ class UniqueEntityDTOValidatorTest extends TestCase
         $this->constraint->errorPath = $errorPath;
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $repository = $this->createMock(ObjectRepository::class);
+        $query = $this->createMock(AbstractQuery::class);
 
         $this->propertyAccessor
             ->expects(static::once())
@@ -234,13 +262,35 @@ class UniqueEntityDTOValidatorTest extends TestCase
             ->willReturn($em);
 
         $em
-            ->method('getRepository')
-            ->with($entityClass)
-            ->willReturn($repository);
+            ->method('createQueryBuilder')
+            ->willReturn($this->qb);
 
-        $repository
+        $this->qb
             ->expects(static::once())
-            ->method('findBy')
+            ->method('select')
+            ->willReturnSelf();
+
+        $this->qb
+            ->expects(static::once())
+            ->method('from')
+            ->with($entityClass)
+            ->willReturnSelf();
+
+        $this->qb
+            ->method('andWhere')
+            ->willReturnSelf();
+
+        $this->qb
+            ->expects(static::once())
+            ->method('setParameters')
+            ->with($uniqueFields);
+
+        $this->qb
+            ->method('getQuery')
+            ->willReturn($query);
+
+        $query
+            ->method('getResult')
             ->willReturn([new class {}]);
 
         $context = $this->createMock(ExecutionContextInterface::class);
@@ -291,7 +341,7 @@ class UniqueEntityDTOValidatorTest extends TestCase
         $this->constraint->entity = 'entity';
 
         $em = $this->createMock(EntityManagerInterface::class);
-        $repository = $this->createMock(ObjectRepository::class);
+        $query = $this->createMock(AbstractQuery::class);
 
         $this->propertyAccessor
             ->expects(static::exactly(2))
@@ -311,12 +361,28 @@ class UniqueEntityDTOValidatorTest extends TestCase
             ->willReturn($em);
 
         $em
-            ->method('getRepository')
-            ->willReturn($repository);
+            ->method('createQueryBuilder')
+            ->willReturn($this->qb);
 
-        $repository
+        $this->qb
             ->expects(static::once())
-            ->method('findBy')
+            ->method('select')
+            ->willReturnSelf();
+
+        $this->qb
+            ->method('from')
+            ->willReturnSelf();
+
+        $this->qb
+            ->method('andWhere')
+            ->willReturnSelf();
+
+        $this->qb
+            ->method('getQuery')
+            ->willReturn($query);
+
+        $query
+            ->method('getResult')
             ->willReturn([$entity]);
 
         $context = $this->createMock(ExecutionContextInterface::class);

@@ -2,15 +2,16 @@
 
 namespace App\Tests\Validator\Constraints;
 
-use App\DTO\Exercise\Exercise;
+use App\Data\Exercise\Exercise;
 use App\Repository\ExerciseRepository;
 use App\Validator\Constraints\ExerciseChoice;
 use App\Validator\Constraints\ExerciseChoiceValidator;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Validator\Constraints\Choice;
-use Symfony\Component\Validator\Constraints\ChoiceValidator;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ExerciseChoiceValidatorTest extends TestCase
 {
@@ -20,32 +21,48 @@ class ExerciseChoiceValidatorTest extends TestCase
     private ExerciseRepository $exerciseRepository;
 
     /**
-     * @var \PHPUnit\Framework\MockObject\MockObject|ChoiceValidator
-     */
-    private ChoiceValidator $choiceValidator;
-
-    /**
      * @var \PHPUnit\Framework\MockObject\MockObject|ExecutionContextInterface
      */
     private ExecutionContextInterface $executionContext;
 
+    /**
+     * @var \PHPUnit\Framework\MockObject\MockObject|ValidatorInterface
+     */
+    private ValidatorInterface $validator;
+
     protected function setUp(): void
     {
         $this->exerciseRepository = $this->createMock(ExerciseRepository::class);
-        $this->choiceValidator = $this->createMock(ChoiceValidator::class);
         $this->executionContext = $this->createMock(ExecutionContextInterface::class);
+
+        $this->validator = $this->createMock(ValidatorInterface::class);
+
+        $this->executionContext
+            ->method('getValidator')
+            ->willReturn($this->validator);
     }
 
     protected function tearDown(): void
     {
-        unset($this->exerciseRepository, $this->choiceValidator, $this->executionContext);
+        unset($this->exerciseRepository, $this->executionContext);
     }
 
-    public function testValidate(): void
+    /**
+     * @param UuidInterface|null $user
+     *
+     * @dataProvider userProvider
+     */
+    public function testValidate(?UuidInterface $user = null): void
     {
-        $object = new class {};
+        $object = new class($user) {
+            public ?UuidInterface $user;
 
-        $constraint = new ExerciseChoice();
+            public function __construct(?UuidInterface $user = null)
+            {
+                $this->user = $user;
+            }
+        };
+        $constraint = new ExerciseChoice(['user' => $user ? 'user' : null]);
 
         $id = Uuid::uuid4();
         $exercise = new Exercise($id, '', []);
@@ -57,22 +74,30 @@ class ExerciseChoiceValidatorTest extends TestCase
         $this->exerciseRepository
             ->expects(static::once())
             ->method('getExercisesList')
+            ->with($user)
             ->willReturn([$exercise]);
 
-        $this->choiceValidator
-            ->expects(static::once())
-            ->method('initialize')
-            ->with($this->executionContext);
-
-        $this->choiceValidator
+        $this->validator
             ->expects(static::once())
             ->method('validate')
-            ->with($object, $constraint);
+            ->with(
+                $object,
+                static::callback(function (Choice $choice) use ($expectedChoices) {
+                    return $choice instanceof Choice &&
+                        $choice->choices = $expectedChoices;
+                }),
+            );
 
-        $validator = new ExerciseChoiceValidator($this->exerciseRepository, $this->choiceValidator);
+        $validator = new ExerciseChoiceValidator($this->exerciseRepository);
         $validator->initialize($this->executionContext);
         $validator->validate($object, $constraint);
 
         static::assertEquals($expectedChoices, $constraint->choices);
+    }
+
+    public function userProvider(): \Generator
+    {
+        yield 'with user' => [Uuid::uuid4()];
+        yield 'without user' => [null];
     }
 }

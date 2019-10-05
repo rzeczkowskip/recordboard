@@ -6,7 +6,10 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\ExerciseRepository")
+ * @ORM\Entity()
+ * @ORM\Table(uniqueConstraints={
+ *     @ORM\UniqueConstraint(columns={"name", "user"})
+ * })
  */
 class Exercise
 {
@@ -21,7 +24,7 @@ class Exercise
     private UuidInterface $id;
 
     /**
-     * @ORM\Column(type="string", unique=true, nullable=false)
+     * @ORM\Column(type="string", nullable=false)
      */
     private string $name;
 
@@ -30,11 +33,28 @@ class Exercise
      */
     private array $attributes;
 
-    public function __construct(string $name, array $attributes)
+    /**
+     * @ORM\ManyToOne(targetEntity="User")
+     * @ORM\JoinColumn(name="user", referencedColumnName="id")
+     */
+    private User $user;
+
+    public function __construct(User $user, string $name, array $attributes)
     {
         $this->id = Uuid::uuid4();
+        $this->user = $user;
         $this->name = $name;
         $this->attributes = $attributes;
+    }
+
+    public function getId(): UuidInterface
+    {
+        return $this->id;
+    }
+
+    public function canUserAccess(UuidInterface $id): bool
+    {
+        return $this->user->getId()->equals($id);
     }
 
     public function getAttributes(): array

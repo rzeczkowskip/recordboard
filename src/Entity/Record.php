@@ -6,7 +6,7 @@ use Ramsey\Uuid\Uuid;
 use Ramsey\Uuid\UuidInterface;
 
 /**
- * @ORM\Entity(repositoryClass="App\Repository\RecordRepository")
+ * @ORM\Entity()
  */
 class Record
 {
@@ -15,11 +15,6 @@ class Record
      * @ORM\Column(type="uuid", nullable=false, unique=true)
      */
     private UuidInterface $id;
-
-    /**
-     * @ORM\ManyToOne(targetEntity="User")
-     */
-    private User $user;
 
     /**
      * @ORM\ManyToOne(targetEntity="Exercise")
@@ -36,12 +31,16 @@ class Record
      */
     private array $values;
 
-    public function __construct(User $user, Exercise $exercise, \DateTimeInterface $earnedAt, array $values)
+    public function __construct(Exercise $exercise, \DateTimeInterface $earnedAt, array $values)
     {
         $this->id = Uuid::uuid4();
-        $this->user = $user;
         $this->exercise = $exercise;
         $this->earnedAt = $earnedAt;
         $this->values = $values;
+    }
+
+    public function getId(): UuidInterface
+    {
+        return $this->id;
     }
 }
