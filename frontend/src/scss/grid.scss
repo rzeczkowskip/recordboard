@@ -1,0 +1,16 @@
+$grid-spacing: 1rem;
+
+.grid-2 {
+    @media screen and (min-width: 35rem) {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 0 #{-$grid-spacing};
+
+        > * {
+            width: 50%;
+            padding: 0 $grid-spacing;
+        }
+    }
+}

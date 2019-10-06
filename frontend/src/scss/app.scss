@@ -1,0 +1,59 @@
+$body-bg: #121212;
+$text-color: rgba(#fff, .8);
+$text-color-secondary: rgba($text-color, .6);
+
+$error-color: rgba(#ff0000, .8);
+
+//buttons
+$btn-bg-color: $text-color;
+$btn-border-color: #000;
+$btn-color: $body-bg;
+
+$btn-color-hover: $btn-border-color;
+
+$app-width: 70rem;
+
+@import "~rfs/scss";
+@import "~cssone/scss/cssone";
+
+@import "grid";
+@import "nav";
+@import "card";
+@import "form";
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+a {
+    transition: all .2s;
+    color: $text-color;
+
+    &:hover {
+        color: $text-color-secondary;
+    }
+}
+
+.form-message-error {
+    color: $error-color;
+}
+
+#app {
+    max-width: $app-width;
+    margin: 0 auto;
+    padding: 1rem;
+
+    header {
+        margin-bottom: 1rem;
+
+        .brand {
+            font-size: 2rem;
+            font-weight: bold;
+
+            a {
+                text-decoration: none;
+            }
+        }
+    }
+}
