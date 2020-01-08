@@ -1,40 +1,21 @@
 <template>
   <div id="app">
-    <header>
-      <div class="brand">
-        <router-link :to="{ name: 'home' }">Recordboard</router-link>
-      </div>
-    </header>
+    <Navbar />
 
-    <nav>
-      <ul v-if="isLoggedIn">
-        <li>
-          <router-link to="/exercises">Exercises</router-link>
-        </li>
-        <li>
-          <router-link to="/records">Records</router-link>
-        </li>
-        <li class="nav-right-start">
-          <router-link to="/profile">Profile</router-link>
-        </li>
-        <li>
-          <router-link :to="{ name: 'user/logout' }">Logout</router-link>
-        </li>
-      </ul>
-    </nav>
-
-    <router-view/>
+    <main class="section is-relative">
+      <transition mode="out-in" name="fade">
+        <router-view/>
+      </transition>
+    </main>
   </div>
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
+import Navbar from './components/Navbar.vue';
 
 export default {
-  computed: {
-    ...mapGetters('user', ['isLoggedIn']),
-  },
+  components: { Navbar },
 };
 </script>
 
-<style lang="scss" src="@/scss/app.scss" />
+<style lang="scss" src="@/scss/app.scss"/>

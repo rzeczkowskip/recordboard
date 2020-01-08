@@ -12,8 +12,10 @@ class ExerciseChoiceValidator extends AbstractDynamicChoiceValidator
 {
     private ExerciseRepository $exerciseRepository;
 
-    public function __construct(ExerciseRepository $exerciseRepository, ?PropertyAccessorInterface $propertyAccessor = null)
-    {
+    public function __construct(
+        ExerciseRepository $exerciseRepository,
+        ?PropertyAccessorInterface $propertyAccessor = null
+    ) {
         $this->exerciseRepository = $exerciseRepository;
     }
 
@@ -33,7 +35,7 @@ class ExerciseChoiceValidator extends AbstractDynamicChoiceValidator
         $exercises = $this->exerciseRepository->getExercisesList($user);
         $choices = [];
         foreach ($exercises as $exercise) {
-            $choices[] = $exercise->getId()->toString();
+            $choices[] = $exercise->getId();
         }
 
         return $choices;

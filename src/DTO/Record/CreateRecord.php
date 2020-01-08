@@ -3,7 +3,6 @@ namespace App\DTO\Record;
 
 use App\Validator\Constraints\ExerciseChoice;
 use App\Validator\Constraints\RecordValues;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 class CreateRecord
@@ -11,12 +10,12 @@ class CreateRecord
     /**
      * @ExerciseChoice()
      */
-    public UuidInterface $exercise;
+    public string $exercise;
 
     /**
      * @Assert\Uuid()
      */
-    public UuidInterface $user;
+    public string $user;
 
     /**
      * @Assert\NotBlank()

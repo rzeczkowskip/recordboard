@@ -17,7 +17,7 @@ class AppFixtures extends Fixture
         $user = new User(
             'admin@example.com',
             '$argon2id$v=19$m=65536,t=4,p=1$bvEeQQRc3jztvvoslXCJuA$SBW1oAFjSdasyHcJEJApD9VxNY8J39EY/1YQceVvk7s',
-        'John Doe'
+            'John Doe'
         );
 
         $secondUser = new User(

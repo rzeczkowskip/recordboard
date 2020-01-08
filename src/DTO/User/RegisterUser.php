@@ -13,17 +13,17 @@ class RegisterUser
      * @Assert\NotBlank()
      * @Assert\Email()
      */
-    public string $email;
+    public ?string $email;
 
     /**
      * @Assert\NotBlank()
      */
-    public string $password;
+    public ?string $password;
 
     /**
      * @Assert\NotBlank()
      */
-    public string $name;
+    public ?string $name;
 
     public function uniqueFields(): array
     {

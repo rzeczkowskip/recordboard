@@ -6,7 +6,6 @@ use App\Entity\Exercise;
 use App\Entity\User;
 use App\Exception\ValidationException;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CreateExerciseHandler
@@ -20,8 +19,7 @@ class CreateExerciseHandler
         $this->em = $entityManager;
     }
 
-    public function createExercise(CreateExercise $createExercise): UuidInterface
-
+    public function createExercise(CreateExercise $createExercise): Exercise
     {
         if (($violations = $this->validator->validate($createExercise)) && $violations->count()) {
             throw new ValidationException($violations);
@@ -37,6 +35,6 @@ class CreateExerciseHandler
         $this->em->persist($exercise);
         $this->em->flush();
 
-        return $exercise->getId();
+        return $exercise;
     }
 }

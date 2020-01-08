@@ -1,0 +1,16 @@
+$block-list-separator: 2px !default;
+
+.block-list {
+    list-style: none;
+    border-color: inherit;
+
+    li {
+        padding: ($gap / 2);
+
+        &:not(:last-child) {
+            border-bottom-style: solid;
+            border-bottom-width: $block-list-separator;
+            border-bottom-color: inherit;
+        }
+    }
+}

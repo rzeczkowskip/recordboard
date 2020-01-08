@@ -18,8 +18,11 @@ class ListRecordsHandler
         $this->recordRepository = $recordRepository;
     }
 
-    public function getPaginationHelper(Exercise $exercise, int $page, int $itemsPerPage = self::ITEMS_PER_PAGE): PaginationHelper
-    {
+    public function getPaginationHelper(
+        Exercise $exercise,
+        int $page,
+        int $itemsPerPage = self::ITEMS_PER_PAGE
+    ): PaginationHelper {
         $totalItems = $this->recordRepository->getRecordsCount($exercise->getId());
         return new PaginationHelper($totalItems, $page, $itemsPerPage);
     }

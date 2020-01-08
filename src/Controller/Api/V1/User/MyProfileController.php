@@ -1,15 +1,15 @@
 <?php
-namespace App\Controller\User;
+namespace App\Controller\Api\V1\User;
 
 use App\Http\JsonResponse;
 use App\Repository\UserRepository;
-use Ramsey\Uuid\Uuid;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @Route("/user/me", name="app_user_me", defaults={"id": null})
+ * @Route("/user/me", name="app_api_v1_user_me", defaults={"id": null})
  */
 class MyProfileController
 {
@@ -22,9 +22,7 @@ class MyProfileController
 
     public function __invoke(Request $request, UserInterface $authUser): JsonResponse
     {
-        $user = $this->userRepository->getProfileById(
-            Uuid::fromString($authUser->getUsername())
-        );
+        $user = $this->userRepository->getProfileById($authUser->getUsername());
 
         return new JsonResponse([
             'data' => $user,

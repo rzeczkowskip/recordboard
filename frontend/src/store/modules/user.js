@@ -34,6 +34,9 @@ const actions = {
   logout({ commit }) {
     commit('setUserData', null);
   },
+  register(_, context) {
+    return userRepository.register(context)
+  },
 };
 
 // mutations

@@ -10,8 +10,12 @@ class JsonResponse
     private array $headers;
     private array $context;
 
-    public function __construct(array $data, int $statusCode = Response::HTTP_OK, array $headers = [], array $context = [])
-    {
+    public function __construct(
+        array $data,
+        int $statusCode = Response::HTTP_OK,
+        array $headers = [],
+        array $context = []
+    ) {
         $this->data = $data;
         $this->statusCode = $statusCode;
         $this->headers = $headers;

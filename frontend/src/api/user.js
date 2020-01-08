@@ -12,4 +12,12 @@ export default {
       )
       .then(response => response.data.data);
   },
+  register(data) {
+    return api.client
+      .post(
+        'v1/user/register',
+        data,
+      )
+      .then(response => response.data.data);
+  },
 };

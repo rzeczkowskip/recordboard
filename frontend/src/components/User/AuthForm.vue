@@ -1,22 +1,17 @@
 <template>
-  <div class="auth">
-    <form method="post" @submit.prevent="auth">
-      <div>
-        <label for="auth-email">E-mail</label>
-        <input type="email" v-model="email" id="auth-email"/>
-        <p class="form-message-error" v-if="error">
-          Could not sign in. Check your e-mail and password
-        </p>
-      </div>
+  <form method="post" @submit.prevent="auth">
+    <b-field label="E-mail" :message="errorMessage" :type="{ 'is-danger': hasError }">
+      <b-input type="email" v-model="email"/>
+    </b-field>
 
-      <div>
-        <label for="auth-password">Password</label>
-        <input type="password" v-model="password" id="auth-password"/>
-      </div>
+    <b-field label="Password">
+      <b-input type="password" v-model="password"/>
+    </b-field>
 
-      <button type="submit" :disabled="loading">Sign in</button>
-    </form>
-  </div>
+    <b-button native-type="submit" :disabled="loading">Save</b-button>
+
+    <b-loading v-if="loading" :active="true" :is-full-page="false" />
+  </form>
 </template>
 
 <script>
@@ -27,9 +22,18 @@ export default {
     return {
       email: '',
       password: '',
-      error: false,
+      hasError: false,
       loading: false,
     };
+  },
+  computed: {
+    errorMessage() {
+      if (this.hasError) {
+        return 'Could not sign in. Check your e-mail and password';
+      }
+
+      return null;
+    },
   },
   methods: {
     ...mapActions({
@@ -39,8 +43,12 @@ export default {
       this.loading = true;
 
       this.doAuth({ email: this.email, password: this.password })
+        .then(() => {
+          this.$emit('success');
+        })
         .catch(() => {
-          this.error = true;
+          this.hasError = true;
+          this.$emit('error');
         })
         .finally(() => {
           this.loading = false;

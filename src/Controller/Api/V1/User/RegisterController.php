@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller\User;
+namespace App\Controller\Api\V1\User;
 
 use App\Handler\User\RegisterUserHandler;
 use App\Http\RequestMapper;
@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/user/register", name="app_user_register", methods={"POST"})
+ * @Route("/user/register", name="app_api_v1_user_register", methods={"POST"})
  */
 class RegisterController
 {

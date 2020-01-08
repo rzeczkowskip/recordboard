@@ -1,59 +1,70 @@
-$body-bg: #121212;
-$text-color: rgba(#fff, .8);
-$text-color-secondary: rgba($text-color, .6);
+@import "~bulmaswatch/darkly/variables";
+@import "~bulma/sass/utilities/_all";
 
-$error-color: rgba(#ff0000, .8);
+//$radius-small: 1px;
+//$radius: 2px;
+//$radius-large: 3px;
+//$box-shadow: 0 0 5px #fff;
+//$control-radius: $radius;
 
-//buttons
-$btn-bg-color: $text-color;
-$btn-border-color: #000;
-$btn-color: $body-bg;
+$list-background-color: $grey-darker;
+$list-shadow: none;
+$list-radius: $radius;
 
-$btn-color-hover: $btn-border-color;
+$list-item-border: 1px solid $border !default
+$list-item-color: $text !default
+$list-item-active-background-color: $link !default
+$list-item-active-color: $link-invert !default
+$list-item-hover-background-color: $background !default
 
-$app-width: 70rem;
+@import "~bulma";
+@import "~buefy/src/scss/buefy";
+@import "~bulmaswatch/darkly/overrides";
 
 @import "~rfs/scss";
-@import "~cssone/scss/cssone";
 
-@import "grid";
-@import "nav";
-@import "card";
-@import "form";
-
-body {
-    margin: 0;
-    padding: 0;
-}
+@import "block-list";
 
 a {
     transition: all .2s;
-    color: $text-color;
+}
 
-    &:hover {
-        color: $text-color-secondary;
+.modal-card-foot.is-right {
+    justify-content: flex-end;
+}
+
+.navbar {
+    border-radius: 0;
+}
+
+.block-list {
+    li {
+        background-color: inherit;
     }
 }
 
-.form-message-error {
-    color: $error-color;
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    main {
+        flex-grow: 1;
+        flex-basis: 100%;
+    }
 }
 
-#app {
-    max-width: $app-width;
-    margin: 0 auto;
-    padding: 1rem;
+main > .loading-overlay .loading-background {
+    background-color: rgba(#fff, .2);
+}
 
-    header {
-        margin-bottom: 1rem;
+.container-reverse {
+    flex-direction: column-reverse;
+}
 
-        .brand {
-            font-size: 2rem;
-            font-weight: bold;
-
-            a {
-                text-decoration: none;
-            }
-        }
+.content {
+    .list-unstyled {
+        list-style-type: none;
+        margin-left: 0;
     }
 }

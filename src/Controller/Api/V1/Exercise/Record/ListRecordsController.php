@@ -1,5 +1,5 @@
 <?php
-namespace App\Controller\Exercise\Record;
+namespace App\Controller\Api\V1\Exercise\Record;
 
 use App\Data\Pagination;
 use App\Entity\Exercise;
@@ -10,7 +10,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/exercises/{exercise}/records", name="app_exercise_record_list", methods={"GET"})
+ * @Route("/exercises/{exercise}/records", name="app_api_v1_exercise_record_list", methods={"GET"})
  */
 class ListRecordsController
 {

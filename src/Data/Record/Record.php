@@ -1,22 +1,20 @@
 <?php
 namespace App\Data\Record;
 
-use Ramsey\Uuid\UuidInterface;
-
 class Record
 {
-    private UuidInterface $exercise;
+    private string $exercise;
     private \DateTimeInterface $earnedAt;
     private array $values;
 
-    public function __construct(UuidInterface $exercise, \DateTimeInterface $earnedAt, array $values)
+    public function __construct(string $exercise, \DateTimeInterface $earnedAt, array $values)
     {
         $this->exercise = $exercise;
         $this->earnedAt = $earnedAt;
         $this->values = $values;
     }
 
-    public function getExercise(): UuidInterface
+    public function getExercise(): string
     {
         return $this->exercise;
     }

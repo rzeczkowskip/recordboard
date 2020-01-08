@@ -1,7 +1,6 @@
 <?php
 namespace App\Security;
 
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 class AuthUser implements UserInterface
@@ -10,9 +9,9 @@ class AuthUser implements UserInterface
     private string $password;
     private array $roles;
 
-    public function __construct(UuidInterface $id, string $password, array $roles = [])
+    public function __construct(string $id, string $password, array $roles = [])
     {
-        $this->id = $id->toString();
+        $this->id = $id;
         $this->password = $password;
 
         if (!$roles) {

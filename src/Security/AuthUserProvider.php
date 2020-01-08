@@ -17,7 +17,7 @@ class AuthUserProvider implements UserProviderInterface
         $this->userRepository = $userRepository;
     }
 
-    public function loadUserByUsername($username): AuthUser
+    public function loadUserByUsername(string $username): AuthUser
     {
         try {
             $user = $this->userRepository->getAuthData($username);

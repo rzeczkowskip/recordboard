@@ -10,6 +10,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Serializer\SerializerInterface;
@@ -32,10 +33,10 @@ class ValidationExceptionSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function handleHttpValidationException(GetResponseForExceptionEvent $event): void
+    public function handleHttpValidationException(ExceptionEvent $event): void
     {
         /** @var ValidationException $exception */
-        if (!($exception = $event->getException()) instanceof ValidationException) {
+        if (!($exception = $event->getThrowable()) instanceof ValidationException) {
             return;
         }
 
