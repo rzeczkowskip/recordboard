@@ -4,7 +4,7 @@ namespace App\Security\Voter;
 
 use App\Entity\Exercise;
 use App\Security\AuthUser;
-use Ramsey\Uuid\Uuid;
+
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
@@ -39,6 +39,6 @@ class ExerciseRecordsVoter extends Voter
             return false;
         }
 
-        return $subject->canUserAccess(Uuid::fromString($authUser->getUsername()));
+        return $subject->canUserAccess($authUser->getUsername());
     }
 }

@@ -2,7 +2,6 @@
 namespace App\DTO\Exercise;
 
 use App\Validator\Constraints\UniqueEntityDTO;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -16,12 +15,11 @@ class CreateExercise
     public string $name;
 
     /**
-     * @Assert\NotBlank()
      * @Assert\Choice(callback={"App\Entity\Exercise", "getAllowedAttributes"}, multiple=true, min="1")
      */
     public array $attributes;
 
-    public UuidInterface $user;
+    public string $user;
 
     public function uniqueFields(): array
     {

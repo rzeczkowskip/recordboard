@@ -2,8 +2,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Entity()
@@ -12,9 +10,9 @@ class Record
 {
     /**
      * @ORM\Id()
-     * @ORM\Column(type="uuid", nullable=false, unique=true)
+     * @ORM\Column(type="guid")
      */
-    private UuidInterface $id;
+    private string $id;
 
     /**
      * @ORM\ManyToOne(targetEntity="Exercise")
@@ -33,13 +31,13 @@ class Record
 
     public function __construct(Exercise $exercise, \DateTimeInterface $earnedAt, array $values)
     {
-        $this->id = Uuid::uuid4();
+        $this->id = uuid_v4();
         $this->exercise = $exercise;
         $this->earnedAt = $earnedAt;
         $this->values = $values;
     }
 
-    public function getId(): UuidInterface
+    public function getId(): string
     {
         return $this->id;
     }

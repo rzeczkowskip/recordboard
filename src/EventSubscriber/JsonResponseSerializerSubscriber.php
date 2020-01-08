@@ -40,13 +40,13 @@ class JsonResponseSerializerSubscriber implements EventSubscriberInterface
             $data,
             'json',
             $serializerContext,
-        );
+            );
 
         $response = \Symfony\Component\HttpFoundation\JsonResponse::fromJsonString(
             $resultJson,
             $status,
             $headers,
-        );
+            );
 
         $event->setResponse($response);
     }

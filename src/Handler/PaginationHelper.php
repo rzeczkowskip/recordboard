@@ -23,7 +23,7 @@ class PaginationHelper
         $this->page = $page;
         $this->itemsPerPage = $itemsPerPage;
         $this->totalItems = $totalItems;
-        $this->pages = (int) ceil($totalItems / $this->itemsPerPage);
+        $this->pages = (int)ceil($totalItems / $this->itemsPerPage);
 
         if ($page > $this->pages && $this->pages > 0) {
             throw PaginationException::invalidPageNumber($page, $this->pages);

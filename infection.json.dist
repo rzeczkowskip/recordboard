@@ -1,0 +1,18 @@
+{
+    "timeout": 30,
+    "source": {
+        "directories": [
+            "src"
+        ],
+        "excludes": [
+            "src/Controller/**/*"
+        ]
+    },
+    "logs": {
+        "text": ".\/var\/infection.log"
+    },
+    "mutators": {
+        "@default": true
+    },
+    "testFrameworkOptions": "--exclude-group func"
+}

@@ -6,7 +6,7 @@ use App\Exception\ValidationException;
 use App\DTO\User\RegisterUser;
 use App\Security\AuthUser;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
+
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -16,20 +16,23 @@ class RegisterUserHandler
     private UserPasswordEncoderInterface $passwordEncoder;
     private ValidatorInterface $validator;
 
-    public function __construct(EntityManagerInterface $entityManager, UserPasswordEncoderInterface $passwordEncoder, ValidatorInterface $validator)
-    {
+    public function __construct(
+        EntityManagerInterface $entityManager,
+        UserPasswordEncoderInterface $passwordEncoder,
+        ValidatorInterface $validator
+    ) {
         $this->em = $entityManager;
         $this->passwordEncoder = $passwordEncoder;
         $this->validator = $validator;
     }
 
-    public function register(RegisterUser $registerUser): void
+    public function register(RegisterUser $registerUser): User
     {
         if (($violations = $this->validator->validate($registerUser)) && $violations->count()) {
             throw new ValidationException($violations);
         }
 
-        $authUser = new AuthUser(Uuid::uuid4(), '');
+        $authUser = new AuthUser(uuid_v4(), '');
 
         $password = $this->passwordEncoder->encodePassword($authUser, $registerUser->password);
 
@@ -41,5 +44,7 @@ class RegisterUserHandler
 
         $this->em->persist($user);
         $this->em->flush();
+
+        return $user;
     }
 }

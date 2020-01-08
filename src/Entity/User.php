@@ -1,10 +1,7 @@
 <?php
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Entity()
@@ -13,11 +10,11 @@ class User
 {
     /**
      * @ORM\Id
-     * @ORM\Column(type="uuid", unique=true)
+     * @ORM\Column(type="guid", unique=true)
      *
-     * @var UuidInterface
+     * @var string
      */
-    private UuidInterface $id;
+    private string $id;
 
     /**
      * @ORM\Column(type="string", nullable=false, unique=true)
@@ -42,13 +39,13 @@ class User
 
     public function __construct(string $email, string $password, string $name)
     {
-        $this->id = Uuid::uuid4();
+        $this->id = uuid_v4();
         $this->email = $email;
         $this->password = $password;
         $this->name = $name;
     }
 
-    public function getId(): UuidInterface
+    public function getId(): string
     {
         return $this->id;
     }

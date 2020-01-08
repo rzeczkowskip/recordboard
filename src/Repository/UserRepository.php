@@ -2,9 +2,9 @@
 namespace App\Repository;
 
 use App\Data\User\Profile;
+use App\Data\User\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
-use Ramsey\Uuid\UuidInterface;
 
 class UserRepository
 {
@@ -28,23 +28,38 @@ class UserRepository
         return $this->getProfileBy('email', $email);
     }
 
-    public function getProfileById(UuidInterface $id): Profile
+    public function getProfileById(string $id): Profile
     {
         return $this->getProfileBy('id', $id);
     }
 
-    public function getUserByApiToken(string $apiToken): \App\Data\User\User
+    public function getUserByApiToken(string $apiToken): User
     {
         $query = sprintf('SELECT NEW %s(u.id, u.email, u.name) 
             FROM App:UserApiToken t 
             JOIN t.user u
             WHERE t.token = :token',
-            \App\Data\User\User::class
+            User::class
         );
 
         return $this->em
             ->createQuery($query)
             ->setParameter('token', $apiToken)
+            ->getSingleResult();
+    }
+
+    public function getUserByEmail(string $email): User
+    {
+        $query = sprintf('SELECT NEW %s(u.id, u.email, u.name) 
+            FROM App:UserApiToken t 
+            JOIN t.user u
+            WHERE t.email = :email',
+            User::class
+        );
+
+        return $this->em
+            ->createQuery($query)
+            ->setParameter('email', $email)
             ->getSingleResult();
     }
 

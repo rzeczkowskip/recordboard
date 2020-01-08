@@ -6,7 +6,6 @@ use App\Entity\Exercise;
 use App\Entity\Record;
 use App\Exception\ValidationException;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class CreateRecordHandler
@@ -20,7 +19,7 @@ class CreateRecordHandler
         $this->validator = $validator;
     }
 
-    public function createRecord(CreateRecord $createRecord): UuidInterface
+    public function createRecord(CreateRecord $createRecord): Record
     {
         if (($violations = $this->validator->validate($createRecord)) && $violations->count()) {
             throw new ValidationException($violations);
@@ -37,6 +36,6 @@ class CreateRecordHandler
         $this->em->persist($record);
         $this->em->flush();
 
-        return $record->getId();
+        return $record;
     }
 }

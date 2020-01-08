@@ -5,7 +5,6 @@ use App\DTO\Record\ListSearchCriteria;
 use App\Entity\Record;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
-use Ramsey\Uuid\UuidInterface;
 
 class RecordRepository
 {
@@ -16,7 +15,7 @@ class RecordRepository
         $this->em = $em;
     }
 
-    public function getRecordData(UuidInterface $id): \App\Data\Record\Record
+    public function getRecordData(string $id): \App\Data\Record\Record
     {
         $query = sprintf(
             'SELECT NEW %s(e.id, r.earnedAt, r.values)
@@ -51,15 +50,15 @@ class RecordRepository
         return $qb->getQuery()->getResult();
     }
 
-    public function getRecordsCount(UuidInterface $exercise): int
+    public function getRecordsCount(string $exercise): int
     {
         $qb = $this->getRecordsBuilder($exercise);
         $qb->select('COUNT(r)');
 
-        return (int) $qb->getQuery()->getSingleScalarResult();
+        return (int)$qb->getQuery()->getSingleScalarResult();
     }
 
-    private function getRecordsBuilder(UuidInterface $exercise): QueryBuilder
+    private function getRecordsBuilder(string $exercise): QueryBuilder
     {
         $qb = $this->em->createQueryBuilder();
 

@@ -1,0 +1,70 @@
+@import "~bulmaswatch/darkly/variables";
+@import "~bulma/sass/utilities/_all";
+
+//$radius-small: 1px;
+//$radius: 2px;
+//$radius-large: 3px;
+//$box-shadow: 0 0 5px #fff;
+//$control-radius: $radius;
+
+$list-background-color: $grey-darker;
+$list-shadow: none;
+$list-radius: $radius;
+
+$list-item-border: 1px solid $border !default
+$list-item-color: $text !default
+$list-item-active-background-color: $link !default
+$list-item-active-color: $link-invert !default
+$list-item-hover-background-color: $background !default
+
+@import "~bulma";
+@import "~buefy/src/scss/buefy";
+@import "~bulmaswatch/darkly/overrides";
+
+@import "~rfs/scss";
+
+@import "block-list";
+
+a {
+    transition: all .2s;
+}
+
+.modal-card-foot.is-right {
+    justify-content: flex-end;
+}
+
+.navbar {
+    border-radius: 0;
+}
+
+.block-list {
+    li {
+        background-color: inherit;
+    }
+}
+
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+
+    main {
+        flex-grow: 1;
+        flex-basis: 100%;
+    }
+}
+
+main > .loading-overlay .loading-background {
+    background-color: rgba(#fff, .2);
+}
+
+.container-reverse {
+    flex-direction: column-reverse;
+}
+
+.content {
+    .list-unstyled {
+        list-style-type: none;
+        margin-left: 0;
+    }
+}

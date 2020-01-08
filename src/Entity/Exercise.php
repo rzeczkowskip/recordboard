@@ -2,8 +2,6 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 
 /**
  * @ORM\Entity()
@@ -19,9 +17,9 @@ class Exercise
 
     /**
      * @ORM\Id()
-     * @ORM\Column(type="uuid")
+     * @ORM\Column(type="guid")
      */
-    private UuidInterface $id;
+    private string $id;
 
     /**
      * @ORM\Column(type="string", nullable=false)
@@ -41,18 +39,18 @@ class Exercise
 
     public function __construct(User $user, string $name, array $attributes)
     {
-        $this->id = Uuid::uuid4();
+        $this->id = uuid_v4();
         $this->user = $user;
         $this->name = $name;
         $this->attributes = $attributes;
     }
 
-    public function getId(): UuidInterface
+    public function getId(): string
     {
         return $this->id;
     }
 
-    public function canUserAccess(UuidInterface $id): bool
+    public function canUserAccess(string $id): bool
     {
         return $this->user->getId()->equals($id);
     }

@@ -18,8 +18,12 @@ class RequestMapper
         $this->serializer = $serializer;
     }
 
-    public function mapToObject(Request $request, object $data, array $context = [], string $source = self::SOURCE_BODY): void
-    {
+    public function mapToObject(
+        Request $request,
+        object $data,
+        array $context = [],
+        string $source = self::SOURCE_BODY
+    ): void {
         switch ($source) {
             case self::SOURCE_POST:
                 $rawData = $request->request->all();

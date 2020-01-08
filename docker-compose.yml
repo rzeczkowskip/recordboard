@@ -33,3 +33,8 @@ services:
             - MYSQL_PASSWORD=app
         expose:
             - "3306"
+
+    frontend:
+        build: ./config/docker/frontend
+        volumes:
+          - ./frontend:/app:cached

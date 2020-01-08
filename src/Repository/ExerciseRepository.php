@@ -3,7 +3,6 @@ namespace App\Repository;
 
 use App\Entity\Exercise;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\UuidInterface;
 
 class ExerciseRepository
 {
@@ -14,12 +13,12 @@ class ExerciseRepository
         $this->em = $em;
     }
 
-    public function findById(UuidInterface $id): ?Exercise
+    public function findById(string $id): ?Exercise
     {
         return $this->em->find(Exercise::class, $id);
     }
 
-    public function getExerciseData(UuidInterface $exercise): \App\Data\Exercise\Exercise
+    public function getExerciseData(Exercise $exercise): \App\Data\Exercise\Exercise
     {
         $query = sprintf(
             'SELECT NEW %s(e.id, e.name, e.attributes) 
@@ -33,10 +32,11 @@ class ExerciseRepository
             ->setParameter('exercise', $exercise)
             ->getSingleResult();
     }
+
     /**
      * @return array|\App\Data\Exercise\Exercise[]
      */
-    public function getExercisesList(?UuidInterface $user = null): array
+    public function getExercisesList(string $userId = null): array
     {
         $select = sprintf(
             'NEW %s(e.id, e.name, e.attributes)',
@@ -48,13 +48,21 @@ class ExerciseRepository
         $qb->select($select);
         $qb->from(Exercise::class, 'e');
 
-        if ($user) {
+        if ($userId) {
             $qb->where('e.user = :user');
-            $qb->setParameter('user', $user);
+            $qb->setParameter('user', $userId);
         }
 
         $qb->orderBy('e.name', 'ASC');
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function deleteExercise(Exercise $exercise): void
+    {
+        $this->em
+            ->createQuery('DELETE FROM App:Exercise e WHERE e = :exercise')
+            ->setParameter('exercise', $exercise)
+            ->execute();
     }
 }

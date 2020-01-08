@@ -4,7 +4,6 @@ namespace App\Handler\User;
 use App\Entity\User;
 use App\Entity\UserApiToken;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\UuidInterface;
 
 class GenerateAuthUserApiTokenHandler
 {
@@ -15,7 +14,7 @@ class GenerateAuthUserApiTokenHandler
         $this->em = $em;
     }
 
-    public function generateToken(UuidInterface $user): string
+    public function generateToken(string $user): UserApiToken
     {
         /** @var User $user */
         $user = $this->em->getReference(
@@ -28,6 +27,6 @@ class GenerateAuthUserApiTokenHandler
         $this->em->persist($apiToken);
         $this->em->flush();
 
-        return $apiToken->getToken();
+        return $apiToken;
     }
 }

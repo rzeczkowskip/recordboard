@@ -1,14 +1,14 @@
 <?php
-namespace App\Controller\Exercise;
+namespace App\Controller\Api\V1\Exercise;
 
 use App\Http\JsonResponse;
 use App\Repository\ExerciseRepository;
-use Ramsey\Uuid\Uuid;
+
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @Route("/exercises", name="app_exercise_list")
+ * @Route("/exercises", name="app_api_v1_exercise_list")
  */
 class ListController
 {
@@ -22,9 +22,7 @@ class ListController
     public function __invoke(UserInterface $user): JsonResponse
     {
         return new JsonResponse([
-            'data' => $this->exerciseRepository->getExercisesList(
-                Uuid::fromString($user->getUsername())
-            ),
+            'data' => $this->exerciseRepository->getExercisesList($user->getUsername()),
         ]);
     }
 }

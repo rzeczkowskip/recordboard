@@ -12,12 +12,12 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
-            pattern: ^/api/v1/
+            pattern: ^/
             anonymous: true
             stateless: true
             json_login:
                 provider: auth_user_provider
-                check_path: app_user_auth
+                check_path: app_api_v1_user_auth
                 username_path: email
                 password_path: password
             guard:
