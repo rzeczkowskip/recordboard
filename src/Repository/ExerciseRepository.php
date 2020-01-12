@@ -18,34 +18,14 @@ class ExerciseRepository
         return $this->em->find(Exercise::class, $id);
     }
 
-    public function getExerciseData(Exercise $exercise): \App\Model\Exercise\Exercise
-    {
-        $query = sprintf(
-            'SELECT NEW %s(e.id, e.name, e.attributes) 
-                FROM App:Exercise e 
-                WHERE e.id = :exercise',
-            \App\Model\Exercise\Exercise::class,
-        );
-
-        return $this->em
-            ->createQuery($query)
-            ->setParameter('exercise', $exercise)
-            ->getSingleResult();
-    }
-
     /**
-     * @return array|\App\Model\Exercise\Exercise[]
+     * @return array|Exercise[]
      */
-    public function getExercisesList(string $userId = null): array
+    public function getList(?string $userId = null): array
     {
-        $select = sprintf(
-            'NEW %s(e.id, e.name, e.attributes)',
-            \App\Model\Exercise\Exercise::class
-        );
-
         $qb = $this->em->createQueryBuilder();
 
-        $qb->select($select);
+        $qb->select('e');
         $qb->from(Exercise::class, 'e');
 
         if ($userId) {
@@ -56,13 +36,5 @@ class ExerciseRepository
         $qb->orderBy('e.name', 'ASC');
 
         return $qb->getQuery()->getResult();
-    }
-
-    public function deleteExercise(Exercise $exercise): void
-    {
-        $this->em
-            ->createQuery('DELETE FROM App:Exercise e WHERE e = :exercise')
-            ->setParameter('exercise', $exercise)
-            ->execute();
     }
 }

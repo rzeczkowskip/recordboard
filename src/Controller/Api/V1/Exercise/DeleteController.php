@@ -2,7 +2,7 @@
 namespace App\Controller\Api\V1\Exercise;
 
 use App\Entity\Exercise;
-use App\Repository\ExerciseRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,16 +12,17 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class DeleteController
 {
-    private ExerciseRepository $exerciseRepository;
+    private EntityManagerInterface $em;
 
-    public function __construct(ExerciseRepository $exerciseRepository)
+    public function __construct(EntityManagerInterface $em)
     {
-        $this->exerciseRepository = $exerciseRepository;
+        $this->em = $em;
     }
 
     public function __invoke(Request $request, Exercise $exercise): Response
     {
-        $this->exerciseRepository->deleteExercise($exercise);
+        $this->em->remove($exercise);
+        $this->em->flush();
 
         return new Response('', Response::HTTP_OK);
     }
