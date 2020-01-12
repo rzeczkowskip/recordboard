@@ -2,13 +2,12 @@
 
 namespace App\Tests\Security;
 
-use App\Data\User\User;
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Security\ApiTokenAuthenticator;
 use App\Security\AuthUser;
 use Doctrine\ORM\NoResultException;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
@@ -70,14 +69,14 @@ class ApiTokenAuthenticatorTest extends TestCase
         $email = 'admin@example.com';
 
         $userProvider = $this->createMock(UserProviderInterface::class);
-        $userDto = new User(Uuid::uuid4(), $email, '');
-        $authUser = new AuthUser(Uuid::uuid4(), '');
+        $user = new User($email, '', '');
+        $authUser = new AuthUser($user->getId(), '');
 
         $this->userRepository
             ->expects(static::once())
             ->method('getUserByApiToken')
             ->with($credentials)
-            ->willReturn($userDto);
+            ->willReturn($user);
 
         $userProvider
             ->expects(static::once())
@@ -137,7 +136,7 @@ class ApiTokenAuthenticatorTest extends TestCase
 
         $result = $authenticator->checkCredentials(
             '',
-            new AuthUser(Uuid::uuid4(), '')
+            new AuthUser(uuid_v4(), '')
         );
 
         static::assertTrue($result);

@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\MessageHandler\Record;
+namespace App\Tests\Handler\Record;
 
 use App\DTO\Record\CreateRecord;
 use App\Entity\Exercise;

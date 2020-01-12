@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\MessageHandler\User;
+namespace App\Tests\Handler\User;
 
 use App\DTO\User\RegisterUser;
 use App\Entity\User;

@@ -1,16 +1,14 @@
 <?php
-namespace App\Tests\MessageHandler\Record;
+namespace App\Tests\Handler\Record;
 
-use App\Data\Record\Record;
 use App\DTO\Record\ListSearchCriteria;
 use App\Entity\Exercise;
 use App\Entity\User;
-use App\Exception\PaginationException;
 use App\Handler\PaginationHelper;
 use App\Handler\Record\ListRecordsHandler;
+use App\Model\Record\Record;
 use App\Repository\RecordRepository;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
 
 class ListRecordsHandlerTest extends TestCase
 {
@@ -68,12 +66,12 @@ class ListRecordsHandlerTest extends TestCase
         $pagination = new PaginationHelper(100, 2, $itemsPerPage);
 
         $records = [
-            new Record(Uuid::uuid4(), new \DateTime(), []),
+            new Record(uuid_v4(), new \DateTime(), []),
         ];
 
         $this->recordRepository
             ->expects(static::once())
-            ->method('getRecords')
+            ->method('searchRecords')
             ->with(static::callback(function (ListSearchCriteria $searchCriteria) use ($exercise, $itemsPerPage, $queryOffset) {
                 return $searchCriteria->getExercise() === $exercise &&
                     $searchCriteria->getQueryLimit() === $itemsPerPage &&

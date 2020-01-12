@@ -38,7 +38,7 @@ class ApiTokenAuthenticator extends AbstractGuardAuthenticator
         try {
             $user = $this->userRepository->getUserByApiToken($credentials);
 
-            return $userProvider->loadUserByUsername($user->email);
+            return $userProvider->loadUserByUsername($user->getEmail());
         } catch (NoResultException $e) {
             return null;
         }

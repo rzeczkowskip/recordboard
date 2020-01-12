@@ -54,4 +54,9 @@ class UserApiToken
     {
         return $this->token;
     }
+
+    public function getUser(): User
+    {
+        return $this->user;
+    }
 }

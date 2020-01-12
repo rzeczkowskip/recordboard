@@ -3,6 +3,7 @@ namespace App\Controller\Api\V1\User;
 
 use App\Handler\User\GenerateAuthUserApiTokenHandler;
 use App\Http\JsonResponse;
+use App\Model\User\Profile;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -25,12 +26,12 @@ class AuthController
     public function __invoke(Request $request, UserInterface $authUser)
     {
         $userId = $authUser->getUsername();
-        $user = $this->userRepository->getProfileById($userId);
+        $user = $this->userRepository->getUserById($userId);
         $apiToken = $this->apiTokenHandler->generateToken($userId);
 
         return new JsonResponse([
             'data' => [
-                'user' => $user,
+                'user' => Profile::fromUser($user),
                 'token' => $apiToken->getToken(),
             ]
         ]);

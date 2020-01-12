@@ -1,5 +1,5 @@
 <?php
-namespace App\Data;
+namespace App\Model;
 
 use App\Handler\PaginationHelper;
 

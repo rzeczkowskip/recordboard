@@ -6,6 +6,7 @@ use App\Entity\Exercise;
 use App\Handler\Record\CreateRecordHandler;
 use App\Http\JsonResponse;
 use App\Http\RequestMapper;
+use App\Model\Record\Record;
 use App\Repository\RecordRepository;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
@@ -21,16 +22,10 @@ class CreateRecordController
 {
     private RequestMapper $requestMapper;
     private CreateRecordHandler $createRecordHandler;
-    private RecordRepository $recordRepository;
 
-    public function __construct(
-        RequestMapper $requestMapper,
-        CreateRecordHandler $createRecordHandler,
-        RecordRepository $recordRepository
-    ) {
+    public function __construct(RequestMapper $requestMapper, CreateRecordHandler $createRecordHandler) {
         $this->requestMapper = $requestMapper;
         $this->createRecordHandler = $createRecordHandler;
-        $this->recordRepository = $recordRepository;
     }
 
     /**
@@ -46,11 +41,11 @@ class CreateRecordController
             'attributes' => ['earnedAt', 'values']
         ]);
 
-        $recordId = $this->createRecordHandler->createRecord($data);
+        $record = $this->createRecordHandler->createRecord($data);
 
         return new JsonResponse(
             [
-                'data' => $this->recordRepository->getRecordData($recordId),
+                'data' => Record::fromRecord($record),
             ],
             Response::HTTP_CREATED
         );

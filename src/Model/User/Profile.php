@@ -1,5 +1,5 @@
 <?php
-namespace App\Data\User;
+namespace App\Model\User;
 
 class Profile
 {
@@ -12,5 +12,14 @@ class Profile
         $this->id = $id;
         $this->email = $email;
         $this->name = $name;
+    }
+
+    public static function fromUser(\App\Entity\User $user): self
+    {
+        return new self(
+            $user->getId(),
+            $user->getEmail(),
+            $user->getName(),
+        );
     }
 }

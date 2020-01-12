@@ -32,7 +32,7 @@ class ExerciseChoiceValidator extends AbstractDynamicChoiceValidator
             $user = $this->getPropertyAccessor()->getValue($value, $constraint->user);
         }
 
-        $exercises = $this->exerciseRepository->getExercisesList($user);
+        $exercises = $this->exerciseRepository->getList($user);
         $choices = [];
         foreach ($exercises as $exercise) {
             $choices[] = $exercise->getId();

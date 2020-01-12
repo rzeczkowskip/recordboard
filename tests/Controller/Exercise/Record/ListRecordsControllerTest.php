@@ -1,60 +1,26 @@
 <?php
 namespace App\Tests\Controller\Exercise\Record;
 
-use App\Entity\Exercise;
-use App\Entity\Record;
-use App\Entity\User;
-use App\Entity\UserApiToken;
-use App\Repository\ExerciseRepository;
-use Ramsey\Uuid\UuidInterface;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Test\WebTestCase;
+use Doctrine\ORM\Query;
 
 /**
  * @group func
  */
 class ListRecordsControllerTest extends WebTestCase
 {
-    private string $token;
-    private UuidInterface $exerciseId;
-
-    protected function setUp(): void
-    {
-        $kernel = static::bootKernel();
-        $em = $kernel->getContainer()->get('doctrine')->getManager();
-        $userRepository = $em->getRepository(User::class);
-
-        $user = $userRepository->findOneBy(['email' => 'admin@example.com']);
-        $token = new UserApiToken($user);
-
-        $exercise = self::$container->get(ExerciseRepository::class)->getExercisesList()[0];
-        $this->exerciseId = $exercise->getId();
-        $exerciseEntity = $em->getReference(Exercise::class, $this->exerciseId);
-
-        $record = new Record($exerciseEntity, new \DateTimeImmutable('now'), ['weight' => 100, 'rep' => 1]);
-
-        $em->persist($record);
-        $em->persist($token);
-        $em->flush();
-
-        $this->token = $token->getToken();
-    }
-
-    protected function tearDown(): void
-    {
-        unset($this->token, $this->exerciseId);
-        //self::ensureKernelShutdown();
-    }
-
     public function testResponseJson(): void
     {
         $client = static::createClient();
+        $exercise = $this->getExercise();
+
         $client->xmlHttpRequest(
             'GET',
-            sprintf('/api/v1/exercises/%s/records', $this->exerciseId->toString()),
+            sprintf('/api/v1/exercises/%s/records', $exercise['id']),
             [],
             [],
             [
-                'HTTP_Authorization' => 'Bearer '.$this->token,
+                'HTTP_Authorization' => 'Bearer '.$this->getUserApiToken(),
             ],
         );
 
@@ -90,7 +56,7 @@ class ListRecordsControllerTest extends WebTestCase
             [],
             [],
             [
-                'HTTP_Authorization' => 'Bearer '.$this->token,
+                'HTTP_Authorization' => 'Bearer '.$this->getUserApiToken(),
             ],
         );
 
@@ -102,9 +68,11 @@ class ListRecordsControllerTest extends WebTestCase
     public function testUnauthorizedReturns401(): void
     {
         $client = static::createClient();
+        $exercise = $this->getExercise();
+
         $client->xmlHttpRequest(
             'GET',
-            sprintf('/api/v1/exercises/%s/records', $this->exerciseId->toString()),
+            sprintf('/api/v1/exercises/%s/records', $exercise['id']),
             [],
             [],
             [
@@ -118,27 +86,28 @@ class ListRecordsControllerTest extends WebTestCase
 
     public function testUserCantAccessOtherUserExercise(): void
     {
-        $em = self::$container->get('doctrine')->getManager();
-
-        $user = new User('testexerciseaccess@example.com', '', '');
-        $token = new UserApiToken($user);
-
-        $em->persist($user);
-        $em->persist($token);
-        $em->flush();
-
         $client = static::createClient();
+        $exercise = $this->getExercise();
+
         $client->xmlHttpRequest(
             'GET',
-            sprintf('/api/v1/exercises/%s/records', $this->exerciseId->toString()),
+            sprintf('/api/v1/exercises/%s/records', $exercise['id']),
             [],
             [],
             [
-                'HTTP_Authorization' => 'Bearer '.$token->getToken(),
+                'HTTP_Authorization' => 'Bearer '.$this->getUserApiToken('second@example.com'),
             ],
         );
 
         $response = $client->getResponse();
         static::assertEquals(404, $response->getStatusCode());
+    }
+
+    private function getExercise(): array
+    {
+        return self::$container->get('doctrine')
+            ->getManager()
+            ->createQuery('SELECT e FROM App:Exercise e')
+            ->getSingleResult(Query::HYDRATE_ARRAY);
     }
 }

@@ -4,8 +4,6 @@ namespace App\Tests\Repository;
 use App\Entity\Exercise;
 use App\Repository\ExerciseRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class ExerciseRepositoryTest extends KernelTestCase
@@ -13,7 +11,7 @@ class ExerciseRepositoryTest extends KernelTestCase
     private EntityManagerInterface $em;
     private ExerciseRepository $repository;
     private Exercise $existingExercise;
-    private UuidInterface $user;
+    private string $userId;
 
     protected function setUp(): void
     {
@@ -24,17 +22,15 @@ class ExerciseRepositoryTest extends KernelTestCase
         $exercise = $this->em->createQuery('SELECT e FROM App:Exercise e')->getSingleResult();
         $this->existingExercise = $exercise;
 
-        $id = $this->em
+        $this->userId = $this->em
             ->createQuery('SELECT u.id FROM App:User u WHERE u.email = :email')
             ->setParameter('email', 'admin@example.com')
             ->getSingleScalarResult();
-
-        $this->user = Uuid::fromString($id);
     }
 
     protected function tearDown(): void
     {
-        unset($this->em, $this->repository);
+        unset($this->em, $this->repository, $this->existingExercise, $this->userId);
         self::ensureKernelShutdown();
     }
 
@@ -43,7 +39,7 @@ class ExerciseRepositoryTest extends KernelTestCase
      */
     public function testFindById(bool $exists): void
     {
-        $result = $this->repository->findById($exists ? $this->existingExercise->getId() : Uuid::uuid4());
+        $result = $this->repository->findById($exists ? $this->existingExercise->getId() : uuid_v4());
 
         if ($exists) {
             static::assertEquals($result, $this->existingExercise);
@@ -59,13 +55,13 @@ class ExerciseRepositoryTest extends KernelTestCase
     }
 
     /**
-     * @dataProvider getExercisesListProvider
+     * @dataProvider getListProvider
      */
-    public function testGetExercisesList(bool $userSpecific): void
+    public function testGetList(bool $userSpecific): void
     {
         $expectedAttributes = ['weight', 'rep'];
 
-        $result = $this->repository->getExercisesList($userSpecific ? $this->user : null);
+        $result = $this->repository->getList($userSpecific ? $this->userId : null);
 
         static::assertIsArray($result);
         static::assertCount(1, $result);
@@ -76,23 +72,14 @@ class ExerciseRepositoryTest extends KernelTestCase
         sort($expectedAttributes);
         sort($expectedAttributes);
 
-        static::assertInstanceOf(\App\Data\Exercise\Exercise::class, $exercise);
-        static::assertInstanceOf(UuidInterface::class, $exercise->getId());
+        static::assertInstanceOf(Exercise::class, $exercise);
         static::assertEquals('Deadlift', $exercise->getName());
         static::assertEquals($expectedAttributes, $exerciseAttributes);
     }
 
-    public function getExercisesListProvider(): \Generator
+    public function getListProvider(): \Generator
     {
         yield 'user specific' => [true];
         yield 'not user specific' => [false];
-    }
-
-    public function testGetExerciseData(): void
-    {
-        $exercise = $this->repository->getExerciseData($this->existingExercise->getId());
-
-        static::assertInstanceOf(\App\Data\Exercise\Exercise::class, $exercise);
-        static::assertEquals($exercise->getId(), $this->existingExercise->getId());
     }
 }

@@ -1,8 +1,7 @@
 <?php
 namespace App\Repository;
 
-use App\Data\User\Profile;
-use App\Data\User\User;
+use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
 
@@ -23,53 +22,30 @@ class UserRepository
             ->getSingleResult(Query::HYDRATE_ARRAY);
     }
 
-    public function getProfileByEmail(string $email): Profile
+    public function getUserById(string $id): User
     {
-        return $this->getProfileBy('email', $email);
-    }
-
-    public function getProfileById(string $id): Profile
-    {
-        return $this->getProfileBy('id', $id);
+        return $this->getUserBy('id', $id);
     }
 
     public function getUserByApiToken(string $apiToken): User
     {
-        $query = sprintf('SELECT NEW %s(u.id, u.email, u.name) 
-            FROM App:UserApiToken t 
-            JOIN t.user u
-            WHERE t.token = :token',
-            User::class
-        );
-
-        return $this->em
-            ->createQuery($query)
+        $token = $this->em
+            ->createQuery('SELECT t,u
+                FROM App:UserApiToken t 
+                JOIN t.user u
+                WHERE t.token = :token')
             ->setParameter('token', $apiToken)
             ->getSingleResult();
+
+        return $token->getUser();
     }
 
-    public function getUserByEmail(string $email): User
-    {
-        $query = sprintf('SELECT NEW %s(u.id, u.email, u.name) 
-            FROM App:UserApiToken t 
-            JOIN t.user u
-            WHERE t.email = :email',
-            User::class
-        );
-
-        return $this->em
-            ->createQuery($query)
-            ->setParameter('email', $email)
-            ->getSingleResult();
-    }
-
-    private function getProfileBy(string $field, string $value): Profile
+    private function getUserBy(string $field, string $value): User
     {
         $query = sprintf(
-            'SELECT NEW %s(u.id, u.email, u.name) 
+            'SELECT u 
                 FROM App:User u 
                 WHERE u.%s = :value',
-            Profile::class,
             $field
         );
 

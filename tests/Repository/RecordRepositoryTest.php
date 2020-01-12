@@ -7,16 +7,14 @@ use App\Entity\Record;
 use App\Handler\PaginationHelper;
 use App\Repository\RecordRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Query;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 class RecordRepositoryTest extends KernelTestCase
 {
     private RecordRepository $repository;
     private Exercise $exercise;
-    private array $values;
-    private \DateTimeInterface $earnedAt;
-
-    private Record $record;
+    private array $existingRecord;
 
     protected function setUp(): void
     {
@@ -24,54 +22,35 @@ class RecordRepositoryTest extends KernelTestCase
         /** @var EntityManagerInterface $em */
         $em = self::$container->get('doctrine')->getManager();
         $this->repository = self::$container->get(RecordRepository::class);
-
-        /** @var Exercise $exercise */
-        $exercise = $em->createQuery('SELECT e FROM App:Exercise e')->getSingleResult();
-        $recordValues = array_combine($exercise->getAttributes(), array_fill(0, count($exercise->getAttributes()), 1));
-        $earnedAt = new \DateTime('now');
-
-        $record = new Record($exercise, $earnedAt, $recordValues);
-        $em->persist($record);
-        $em->flush();
-
-        $this->record = $record;
-        $this->exercise = $exercise;
-        $this->values = $recordValues;
-        $this->earnedAt = $earnedAt;
+        $this->exercise = $em->createQuery('SELECT e FROM App:Exercise e')->getSingleResult();
+        $this->existingRecord = $em
+            ->createQuery('SELECT r FROM App:Record r WHERE r.exercise = :exercise')
+            ->setParameter('exercise', $this->exercise)
+            ->setHint(Query::HINT_INCLUDE_META_COLUMNS, true)
+            ->getSingleResult(Query::HYDRATE_ARRAY);
     }
 
     protected function tearDown(): void
     {
-        unset($this->em, $this->existingRecord);
-        self::ensureKernelShutdown();
+        unset($this->repository, $this->exercise, $this->existingRecord);
+        parent::tearDown();
     }
 
-    public function testGetRecordData(): void
-    {
-        $result = $this->repository->getRecordData($this->record->getId());
-
-        static::assertEquals($this->values, $result->getValues());
-        static::assertEquals($this->exercise->getId(), $result->getExercise());
-        static::assertEqualsWithDelta($this->earnedAt, $result->getEarnedAt(), 1);
-    }
-
-    public function testGetRecords(): void
+    public function testSearchRecords(): void
     {
         $pagination = new PaginationHelper(1, 1, 1);
         $criteria = new ListSearchCriteria($this->exercise, $pagination);
 
-        $records = $this->repository->getRecords($criteria);
+        $records = $this->repository->searchRecords($criteria);
 
         static::assertCount(1, $records);
 
-        /** @var \App\Data\Record\Record $record */
         $record = reset($records);
-        static::assertEquals($this->values, $record->getValues());
-        static::assertEquals($this->exercise->getId(), $record->getExercise());
-        static::assertEqualsWithDelta($this->earnedAt, $record->getEarnedAt(), 1);
+        static::assertEquals($this->existingRecord['values'], $record->getValues());
+        static::assertEquals($this->existingRecord['exercise_id'], $record->getExercise()->getId());
     }
 
-    public function testGetRecordsCount(): void
+    public function testSearchRecordsCount(): void
     {
         $result = $this->repository->getRecordsCount($this->exercise->getId());
 

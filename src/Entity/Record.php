@@ -41,4 +41,19 @@ class Record
     {
         return $this->id;
     }
+
+    public function getExercise(): Exercise
+    {
+        return $this->exercise;
+    }
+
+    public function getEarnedAt(): \DateTimeInterface
+    {
+        return $this->earnedAt;
+    }
+
+    public function getValues(): array
+    {
+        return $this->values;
+    }
 }

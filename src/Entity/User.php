@@ -49,4 +49,14 @@ class User
     {
         return $this->id;
     }
+
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
 }

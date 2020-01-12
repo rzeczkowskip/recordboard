@@ -1,5 +1,5 @@
 <?php
-namespace App\Data\Exercise;
+namespace App\Model\Exercise;
 
 class Exercise
 {
@@ -12,6 +12,15 @@ class Exercise
         $this->id = $id;
         $this->name = $name;
         $this->attributes = $attributes;
+    }
+
+    public static function fromExercise(\App\Entity\Exercise $exercise): self
+    {
+        return new self(
+            $exercise->getId(),
+            $exercise->getName(),
+            $exercise->getAttributes()
+        );
     }
 
     public function getId(): string
