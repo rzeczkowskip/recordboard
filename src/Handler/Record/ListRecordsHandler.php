@@ -37,6 +37,6 @@ class ListRecordsHandler
     {
         $searchCriteria = new ListSearchCriteria($exercise, $paginationHelper);
 
-        return $this->recordRepository->getRecords($searchCriteria);
+        return $this->recordRepository->searchRecords($searchCriteria);
     }
 }

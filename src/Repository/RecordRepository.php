@@ -15,34 +15,12 @@ class RecordRepository
         $this->em = $em;
     }
 
-    public function getRecordData(string $id): \App\Model\Record\Record
-    {
-        $query = sprintf(
-            'SELECT NEW %s(e.id, r.earnedAt, r.values)
-                FROM App:Record r
-                JOIN r.exercise e
-                WHERE r = :id',
-            \App\Model\Record\Record::class,
-        );
-
-        $query = $this->em->createQuery($query);
-        $query->setParameter('id', $id);
-        return $query->getSingleResult();
-    }
-
     /**
-     * @return array|\App\Model\Record\Record[]
+     * @return array|Record[]
      */
-    public function getRecords(ListSearchCriteria $searchCriteria): array
+    public function searchRecords(ListSearchCriteria $searchCriteria): array
     {
-        $select = sprintf(
-            'NEW %s(e.id, r.earnedAt, r.values)',
-            \App\Model\Record\Record::class
-        );
-
         $qb = $this->getRecordsBuilder($searchCriteria->getExercise()->getId());
-
-        $qb->select($select);
 
         $qb->setMaxResults($searchCriteria->getQueryLimit());
         $qb->setFirstResult($searchCriteria->getQueryOffset());

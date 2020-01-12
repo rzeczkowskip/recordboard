@@ -27,7 +27,11 @@ class RecordRepositoryTest extends KernelTestCase
 
         /** @var Exercise $exercise */
         $exercise = $em->createQuery('SELECT e FROM App:Exercise e')->getSingleResult();
-        $recordValues = array_combine($exercise->getAttributes(), array_fill(0, count($exercise->getAttributes()), 1));
+        $recordValues = [
+            'weight' => 100,
+            'rep' => 1,
+        ];
+
         $earnedAt = new \DateTime('now');
 
         $record = new Record($exercise, $earnedAt, $recordValues);
@@ -46,21 +50,12 @@ class RecordRepositoryTest extends KernelTestCase
         self::ensureKernelShutdown();
     }
 
-    public function testGetRecordData(): void
-    {
-        $result = $this->repository->getRecordData($this->record->getId());
-
-        static::assertEquals($this->values, $result->getValues());
-        static::assertEquals($this->exercise->getId(), $result->getExercise());
-        static::assertEqualsWithDelta($this->earnedAt, $result->getEarnedAt(), 1);
-    }
-
-    public function testGetRecords(): void
+    public function testSearchRecords(): void
     {
         $pagination = new PaginationHelper(1, 1, 1);
         $criteria = new ListSearchCriteria($this->exercise, $pagination);
 
-        $records = $this->repository->getRecords($criteria);
+        $records = $this->repository->searchRecords($criteria);
 
         static::assertCount(1, $records);
 
@@ -71,7 +66,7 @@ class RecordRepositoryTest extends KernelTestCase
         static::assertEqualsWithDelta($this->earnedAt, $record->getEarnedAt(), 1);
     }
 
-    public function testGetRecordsCount(): void
+    public function testSearchRecordsCount(): void
     {
         $result = $this->repository->getRecordsCount($this->exercise->getId());
 
