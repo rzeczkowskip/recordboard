@@ -1,5 +1,5 @@
 <?php
-namespace App\Data\User;
+namespace App\Model\User;
 
 class Profile
 {

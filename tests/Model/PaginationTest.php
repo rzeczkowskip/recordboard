@@ -1,7 +1,7 @@
 <?php
-namespace App\Tests\Data;
+namespace App\Tests\Model;
 
-use App\Data\Pagination;
+use App\Model\Pagination;
 use App\Handler\PaginationHelper;
 use PHPUnit\Framework\TestCase;
 

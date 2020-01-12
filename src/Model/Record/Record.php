@@ -1,5 +1,5 @@
 <?php
-namespace App\Data\Record;
+namespace App\Model\Record;
 
 class Record
 {
@@ -12,6 +12,15 @@ class Record
         $this->exercise = $exercise;
         $this->earnedAt = $earnedAt;
         $this->values = $values;
+    }
+
+    public static function fromRecord(\App\Entity\Record $record): self
+    {
+        return new self(
+            $record->getExercise()->getId(),
+            $record->getEarnedAt(),
+            $record->getValues(),
+        );
     }
 
     public function getExercise(): string
