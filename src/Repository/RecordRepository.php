@@ -25,6 +25,8 @@ class RecordRepository
         $qb->setMaxResults($searchCriteria->getQueryLimit());
         $qb->setFirstResult($searchCriteria->getQueryOffset());
 
+        $qb->orderBy('r.earnedAt', 'DESC');
+
         return $qb->getQuery()->getResult();
     }
 
