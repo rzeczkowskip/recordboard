@@ -30,9 +30,9 @@ class RecordValuesValidator extends ConstraintValidator
             throw new UnexpectedTypeException($constraint, RecordValues::class);
         }
 
-        /** @var Exercise $exercise */
+        /** @var Exercise|string $exercise */
         $exercise = $this->getPropertyAccessor()->getValue($this->context->getObject(), $constraint->exercise);
-        if ($exercise instanceof string) {
+        if (is_string($exercise)) {
             $exercise = $this->exerciseRepository->findById($exercise);
         }
 

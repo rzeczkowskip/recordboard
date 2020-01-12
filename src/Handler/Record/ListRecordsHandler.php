@@ -1,7 +1,7 @@
 <?php
 namespace App\Handler\Record;
 
-use App\Data\Record\Record;
+use App\Model\Record\Record;
 use App\DTO\Record\ListSearchCriteria;
 use App\Entity\Exercise;
 use App\Handler\PaginationHelper;

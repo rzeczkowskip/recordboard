@@ -27,10 +27,17 @@ class AppFixtures extends Fixture
         );
 
         $exercise = new Exercise($user, 'Deadlift', [Exercise::ATTRIBUTE_REP, Exercise::ATTRIBUTE_WEIGHT]);
+        $record = new Record(
+            $exercise,
+            new \DateTime('now'),
+            [Exercise::ATTRIBUTE_REP => 1, Exercise::ATTRIBUTE_WEIGHT => 100]
+        );
 
         $manager->persist($user);
         $manager->persist($secondUser);
+
         $manager->persist($exercise);
+        $manager->persist($record);
 
         $manager->flush();
     }

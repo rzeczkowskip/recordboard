@@ -1,72 +1,44 @@
 <?php
 namespace App\Tests\Controller\Record;
 
-use App\Entity\Exercise;
-use App\Entity\User;
-use App\Entity\UserApiToken;
+use App\Test\WebTestCase;
 use Doctrine\ORM\Query;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 /**
  * @group func
  */
 class CreateRecordControllerTest extends WebTestCase
 {
-    private string $token;
-    private string $secondToken;
-    private \App\Data\Exercise\Exercise $exercise;
-
-    protected function setUp(): void
-    {
-        $kernel = static::bootKernel();
-        $em = $kernel->getContainer()->get('doctrine')->getManager();
-
-        $user = $em->createQuery('SELECT u FROM App:User u WHERE u.email = :email')
-            ->setParameter('email', 'admin@example.com')
-            ->getSingleResult();
-        $token = new UserApiToken($user);
-
-        $secondUser = $em->createQuery('SELECT u FROM App:User u WHERE u.email = :email')
-            ->setParameter('email', 'second@example.com')
-            ->getSingleResult();
-        $secondToken = new UserApiToken($secondUser);
-
-        $em->persist($token);
-        $em->persist($secondToken);
-        $em->flush();
-
-        $exercise = $em->createQuery('SELECT e FROM App:Exercise e')->getSingleResult(Query::HYDRATE_ARRAY);
-        $this->exercise = new \App\Data\Exercise\Exercise($exercise['id'], $exercise['name'], $exercise['attributes']);
-        $this->token = $token->getToken();
-        $this->secondToken = $secondToken->getToken();
-    }
-
-    protected function tearDown(): void
-    {
-        unset($this->token, $this->exercise);
-        self::ensureKernelShutdown();
-    }
-
     public function testCreateRecord(): void
     {
+        $client = self::createClient();
+        $exercise = $this->getExercise();
+
         $dataValues = [];
-        foreach ($this->exercise->getAttributes() as $attribute) {
+        foreach ($exercise['attributes'] as $attribute) {
             $dataValues[$attribute] = 5;
         }
 
+        $now = new \DateTime('now');
+
         $data = [
-            'earnedAt' => (new \DateTime('now'))->format('Y-m-d H:i:s'),
+            'earnedAt' => $now->format('Y-m-d H:i:s'),
             'values' => $dataValues,
         ];
 
-        $client = static::createClient();
+        $expectedResultData = [
+            'exercise' => $exercise['id'],
+            'values' => $dataValues,
+            'earnedAt' => $now->format('c'),
+        ];
+
         $client->xmlHttpRequest(
             'POST',
-            sprintf('/api/v1/exercises/%s/records', $this->exercise->getId()->toString()),
+            sprintf('/api/v1/exercises/%s/records', $exercise['id']),
             [],
             [],
             [
-                'HTTP_Authorization' => 'Bearer '.$this->token,
+                'HTTP_Authorization' => 'Bearer '.$this->getUserApiToken(),
             ],
             json_encode($data)
         );
@@ -83,11 +55,12 @@ class CreateRecordControllerTest extends WebTestCase
 
         $record = $resultArray['data'];
 
-        static::assertArrayHasKey('exercise', $record);
-        static::assertArrayHasKey('earnedAt', $record);
-        static::assertArrayHasKey('values', $record);
-        static::assertIsArray($record['values']);
-        static::assertIsString($record['earnedAt']);
+        static::assertEquals($expectedResultData, $record);
+//        static::assertArrayHasKey('exercise', $record);
+//        static::assertArrayHasKey('earnedAt', $record);
+//        static::assertArrayHasKey('values', $record);
+//        static::assertIsArray($record['values']);
+//        static::assertIsString($record['earnedAt']);
     }
 
     public function testExerciseNotFoundReturns404(): void
@@ -99,7 +72,7 @@ class CreateRecordControllerTest extends WebTestCase
             [],
             [],
             [
-                'HTTP_Authorization' => 'Bearer '.$this->token,
+                'HTTP_Authorization' => 'Bearer '.$this->getUserApiToken(),
             ],
         );
 
@@ -111,9 +84,11 @@ class CreateRecordControllerTest extends WebTestCase
     public function testUnauthorizedReturns401(): void
     {
         $client = static::createClient();
+        $exercise = $this->getExercise();
+
         $client->xmlHttpRequest(
             'POST',
-            sprintf('/api/v1/exercises/%s/records', $this->exercise->getId()->toString()),
+            sprintf('/api/v1/exercises/%s/records', $exercise['id']),
             [],
             [],
             [
@@ -128,28 +103,29 @@ class CreateRecordControllerTest extends WebTestCase
 
     public function testUserCantAccessOtherUserExercise(): void
     {
-        $em = self::$container->get('doctrine')->getManager();
-
-        $user = new User('testexerciseaccess@example.com', '', '');
-        $token = new UserApiToken($user);
-
-        $em->persist($user);
-        $em->persist($token);
-        $em->flush();
-
         $client = static::createClient();
+        $exercise = $this->getExercise();
+
         $client->xmlHttpRequest(
             'POST',
-            sprintf('/api/v1/exercises/%s/records', $this->exercise->getId()->toString()),
+            sprintf('/api/v1/exercises/%s/records', $exercise['id']),
             [],
             [],
             [
-                'HTTP_Authorization' => 'Bearer '.$token->getToken()
+                'HTTP_Authorization' => 'Bearer '.$this->getUserApiToken('second@example.com')
             ],
             '',
         );
 
         $response = $client->getResponse();
         static::assertEquals(404, $response->getStatusCode());
+    }
+
+    private function getExercise(): array
+    {
+        return self::$container->get('doctrine')
+            ->getManager()
+            ->createQuery('SELECT e FROM App:Exercise e')
+            ->getSingleResult(Query::HYDRATE_ARRAY);
     }
 }

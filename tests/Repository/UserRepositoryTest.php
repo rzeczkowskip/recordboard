@@ -1,7 +1,7 @@
 <?php
 namespace App\Tests\Repository;
 
-use App\Data\User\Profile;
+use App\Model\User\Profile;
 use App\Entity\User;
 use App\Entity\UserApiToken;
 use App\Repository\UserRepository;
@@ -98,7 +98,7 @@ class UserRepositoryTest extends KernelTestCase
 
         $result = $this->repository->getUserByApiToken($token->getToken());
 
-        static::assertInstanceOf(\App\Data\User\User::class, $result);
+        static::assertInstanceOf(\App\Model\User\User::class, $result);
         static::assertEquals($user['email'], $result->email);
         static::assertEquals($user['name'], $result->name);
         static::assertEquals($user['id'], $result->id);

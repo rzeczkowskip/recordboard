@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\MessageHandler\Exercise;
+namespace App\Tests\Handler\Exercise;
 
 use App\DTO\Exercise\CreateExercise;
 use App\Entity\Exercise;

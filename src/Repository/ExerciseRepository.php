@@ -18,13 +18,13 @@ class ExerciseRepository
         return $this->em->find(Exercise::class, $id);
     }
 
-    public function getExerciseData(Exercise $exercise): \App\Data\Exercise\Exercise
+    public function getExerciseData(Exercise $exercise): \App\Model\Exercise\Exercise
     {
         $query = sprintf(
             'SELECT NEW %s(e.id, e.name, e.attributes) 
                 FROM App:Exercise e 
                 WHERE e.id = :exercise',
-            \App\Data\Exercise\Exercise::class,
+            \App\Model\Exercise\Exercise::class,
         );
 
         return $this->em
@@ -34,13 +34,13 @@ class ExerciseRepository
     }
 
     /**
-     * @return array|\App\Data\Exercise\Exercise[]
+     * @return array|\App\Model\Exercise\Exercise[]
      */
     public function getExercisesList(string $userId = null): array
     {
         $select = sprintf(
             'NEW %s(e.id, e.name, e.attributes)',
-            \App\Data\Exercise\Exercise::class
+            \App\Model\Exercise\Exercise::class
         );
 
         $qb = $this->em->createQueryBuilder();

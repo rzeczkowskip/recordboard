@@ -1,5 +1,5 @@
 <?php
-namespace App\Tests\MessageHandler\User;
+namespace App\Tests\Handler\User;
 
 use App\Entity\User;
 use App\Entity\UserApiToken;

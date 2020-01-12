@@ -2,7 +2,7 @@
 
 namespace App\Tests\Security;
 
-use App\Data\User\User;
+use App\Model\User\User;
 use App\Repository\UserRepository;
 use App\Security\ApiTokenAuthenticator;
 use App\Security\AuthUser;

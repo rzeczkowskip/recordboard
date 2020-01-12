@@ -1,32 +1,13 @@
 <?php
 namespace App\Tests\Controller\User;
 
-use App\Entity\User;
-use App\Entity\UserApiToken;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use App\Test\WebTestCase;
 
 /**
  * @group func
  */
 class MyProfileControllerTest extends WebTestCase
 {
-    private string $token;
-
-    protected function setUp(): void
-    {
-        $kernel = static::bootKernel();
-        $em = $kernel->getContainer()->get('doctrine')->getManager();
-        $repository = $em->getRepository(User::class);
-
-        $user = $repository->findOneBy(['email' => 'admin@example.com']);
-        $token = new UserApiToken($user);
-
-        $em->persist($token);
-        $em->flush();
-
-        $this->token = $token->getToken();
-    }
-
     public function testGetProfileWithApiKey(): void
     {
         $client = static::createClient();
@@ -36,7 +17,7 @@ class MyProfileControllerTest extends WebTestCase
             [],
             [],
             [
-                'HTTP_Authorization' => 'Bearer '.$this->token,
+                'HTTP_Authorization' => 'Bearer '.$this->getUserApiToken(),
             ],
         );
 

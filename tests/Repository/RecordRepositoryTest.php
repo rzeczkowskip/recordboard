@@ -64,7 +64,7 @@ class RecordRepositoryTest extends KernelTestCase
 
         static::assertCount(1, $records);
 
-        /** @var \App\Data\Record\Record $record */
+        /** @var \App\Model\Record\Record $record */
         $record = reset($records);
         static::assertEquals($this->values, $record->getValues());
         static::assertEquals($this->exercise->getId(), $record->getExercise());

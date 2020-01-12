@@ -1,7 +1,7 @@
 <?php
-namespace App\Tests\MessageHandler\Record;
+namespace App\Tests\Handler\Record;
 
-use App\Data\Record\Record;
+use App\Model\Record\Record;
 use App\DTO\Record\ListSearchCriteria;
 use App\Entity\Exercise;
 use App\Entity\User;

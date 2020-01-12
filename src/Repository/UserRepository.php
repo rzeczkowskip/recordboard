@@ -1,8 +1,8 @@
 <?php
 namespace App\Repository;
 
-use App\Data\User\Profile;
-use App\Data\User\User;
+use App\Model\User\Profile;
+use App\Model\User\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query;
 

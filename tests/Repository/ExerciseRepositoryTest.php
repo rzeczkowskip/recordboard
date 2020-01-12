@@ -76,7 +76,7 @@ class ExerciseRepositoryTest extends KernelTestCase
         sort($expectedAttributes);
         sort($expectedAttributes);
 
-        static::assertInstanceOf(\App\Data\Exercise\Exercise::class, $exercise);
+        static::assertInstanceOf(\App\Model\Exercise\Exercise::class, $exercise);
         static::assertInstanceOf(UuidInterface::class, $exercise->getId());
         static::assertEquals('Deadlift', $exercise->getName());
         static::assertEquals($expectedAttributes, $exerciseAttributes);
@@ -92,7 +92,7 @@ class ExerciseRepositoryTest extends KernelTestCase
     {
         $exercise = $this->repository->getExerciseData($this->existingExercise->getId());
 
-        static::assertInstanceOf(\App\Data\Exercise\Exercise::class, $exercise);
+        static::assertInstanceOf(\App\Model\Exercise\Exercise::class, $exercise);
         static::assertEquals($exercise->getId(), $this->existingExercise->getId());
     }
 }

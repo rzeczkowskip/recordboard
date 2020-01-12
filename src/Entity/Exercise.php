@@ -52,7 +52,12 @@ class Exercise
 
     public function canUserAccess(string $id): bool
     {
-        return $this->user->getId()->equals($id);
+        return $this->user->getId() === $id;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
     }
 
     public function getAttributes(): array

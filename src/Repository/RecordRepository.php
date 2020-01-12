@@ -15,14 +15,14 @@ class RecordRepository
         $this->em = $em;
     }
 
-    public function getRecordData(string $id): \App\Data\Record\Record
+    public function getRecordData(string $id): \App\Model\Record\Record
     {
         $query = sprintf(
             'SELECT NEW %s(e.id, r.earnedAt, r.values)
                 FROM App:Record r
                 JOIN r.exercise e
                 WHERE r = :id',
-            \App\Data\Record\Record::class,
+            \App\Model\Record\Record::class,
         );
 
         $query = $this->em->createQuery($query);
@@ -31,13 +31,13 @@ class RecordRepository
     }
 
     /**
-     * @return array|\App\Data\Record\Record[]
+     * @return array|\App\Model\Record\Record[]
      */
     public function getRecords(ListSearchCriteria $searchCriteria): array
     {
         $select = sprintf(
             'NEW %s(e.id, r.earnedAt, r.values)',
-            \App\Data\Record\Record::class
+            \App\Model\Record\Record::class
         );
 
         $qb = $this->getRecordsBuilder($searchCriteria->getExercise()->getId());

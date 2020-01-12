@@ -1,7 +1,7 @@
 <?php
 namespace App\Controller\Api\V1\Exercise\Record;
 
-use App\Data\Pagination;
+use App\Model\Pagination;
 use App\Entity\Exercise;
 use App\Handler\Record\ListRecordsHandler;
 use App\Http\JsonResponse;

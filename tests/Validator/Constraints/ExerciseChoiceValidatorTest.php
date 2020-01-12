@@ -2,7 +2,7 @@
 
 namespace App\Tests\Validator\Constraints;
 
-use App\Data\Exercise\Exercise;
+use App\Model\Exercise\Exercise;
 use App\Repository\ExerciseRepository;
 use App\Validator\Constraints\ExerciseChoice;
 use App\Validator\Constraints\ExerciseChoiceValidator;

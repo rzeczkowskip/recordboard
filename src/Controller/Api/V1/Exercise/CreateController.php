@@ -5,8 +5,7 @@ use App\DTO\Exercise\CreateExercise;
 use App\Handler\Exercise\CreateExerciseHandler;
 use App\Http\JsonResponse;
 use App\Http\RequestMapper;
-use App\Repository\ExerciseRepository;
-
+use App\Model\Exercise\Exercise;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -17,16 +16,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
  */
 class CreateController
 {
-    private ExerciseRepository $exerciseRepository;
     private RequestMapper $requestMapper;
     private CreateExerciseHandler $createExerciseHandler;
 
-    public function __construct(
-        RequestMapper $requestMapper,
-        CreateExerciseHandler $createExerciseHandler,
-        ExerciseRepository $exerciseRepository
-    ) {
-        $this->exerciseRepository = $exerciseRepository;
+    public function __construct(RequestMapper $requestMapper, CreateExerciseHandler $createExerciseHandler) {
         $this->requestMapper = $requestMapper;
         $this->createExerciseHandler = $createExerciseHandler;
     }
@@ -40,11 +33,11 @@ class CreateController
             'attributes' => ['name', 'attributes']
         ]);
 
-        $id = $this->createExerciseHandler->createExercise($data);
+        $exercise = $this->createExerciseHandler->createExercise($data);
 
         return new JsonResponse(
             [
-                'data' => $this->exerciseRepository->getExerciseData($id),
+                'data' => Exercise::fromExercise($exercise),
             ],
             Response::HTTP_CREATED,
         );
