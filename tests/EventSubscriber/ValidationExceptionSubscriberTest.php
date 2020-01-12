@@ -9,10 +9,10 @@ use Symfony\Component\Console\Event\ConsoleErrorEvent;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\Console\Output\StreamOutput;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
+use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -58,15 +58,12 @@ class ValidationExceptionSubscriberTest extends KernelTestCase
 
     public function testHandleHttpValidationExceptionWithInvalidException(): void
     {
-        $event = $this->createMock(GetResponseForExceptionEvent::class);
-        $event
-            ->expects(static::once())
-            ->method('getException')
-            ->willReturn(new \Exception());
+        $request = $this->createMock(Request::class);
+        $event = $this->getExceptionEvent(new \Exception(), $request);
 
-        $event
+        $request
             ->expects(static::never())
-            ->method('getRequest');
+            ->method('getMethod');
 
         $subscriber = new ValidationExceptionSubscriber($this->serializer);
         $subscriber->handleHttpValidationException($event);
@@ -90,35 +87,21 @@ class ValidationExceptionSubscriberTest extends KernelTestCase
 
         $request = new Request([], [], ['_format' => $format], [], [], ['REQUEST_METHOD' => $requestMethod]);
 
+        $event = $this->getExceptionEvent($exception, $request);
+
         $this->serializer
             ->expects(static::once())
             ->method('serialize')
             ->with($violations, $format)
             ->willReturn($expectedJson);
 
-        $event = $this->createMock(GetResponseForExceptionEvent::class);
-        $event
-            ->expects(static::once())
-            ->method('getException')
-            ->willReturn($exception);
-
-        $event
-            ->expects(static::once())
-            ->method('getRequest')
-            ->willReturn($request);
-
-        $event
-            ->expects(static::once())
-            ->method('setResponse')
-            ->with(static::callback(function (Response $response) use ($expectedJson, $responseStatusCode) {
-                return
-                    $response instanceof Response &&
-                    $response->getContent() === $expectedJson &&
-                    $response->getStatusCode() === $responseStatusCode;
-            }));
-
         $subscriber = new ValidationExceptionSubscriber($this->serializer);
         $subscriber->handleHttpValidationException($event);
+
+        $response = $event->getResponse();
+        static::assertInstanceOf(Response::class, $response);
+        static::assertEquals($expectedJson, $response->getContent());
+        static::assertEquals($responseStatusCode, $response->getStatusCode());
     }
 
     public function handleValidationExceptionProvider(): \Generator
@@ -196,6 +179,16 @@ class ValidationExceptionSubscriberTest extends KernelTestCase
         static::assertStringContainsString('[ERROR] Validation failed', $result);
         static::assertStringContainsString('property', $result);
         static::assertStringContainsString('error', $result);
+    }
+
+    private function getExceptionEvent(\Throwable $exception, ?Request $request = null): ExceptionEvent
+    {
+        return new ExceptionEvent(
+            $this->createMock(HttpKernelInterface::class),
+            $request ?: $this->createMock(Request::class),
+            0,
+            $exception
+        );
     }
 }
 

@@ -15,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\Event\ViewEvent;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\ConstraintViolationList;
@@ -59,11 +60,7 @@ class JsonResponseSerializerSubscriberTest extends KernelTestCase
 
     public function testSerializeWithUnsupportedResponse(): void
     {
-        $event = $this->createMock(ViewEvent::class);
-        $event
-            ->expects(static::once())
-            ->method('getControllerResult')
-            ->willReturn(new class {});
+        $event = $this->getViewEvent(new class {});
 
         $this->serializer
             ->expects(static::never())
@@ -83,11 +80,7 @@ class JsonResponseSerializerSubscriberTest extends KernelTestCase
 
         $controllerResult = new \App\Http\JsonResponse($data, $statusCode, $headers, $context);
 
-        $event = $this->createMock(ViewEvent::class);
-        $event
-            ->expects(static::once())
-            ->method('getControllerResult')
-            ->willReturn($controllerResult);
+        $event = $this->getViewEvent($controllerResult);
 
         $this->serializer
             ->expects(static::once())
@@ -99,18 +92,23 @@ class JsonResponseSerializerSubscriberTest extends KernelTestCase
             )
             ->willReturn($dataJson);
 
-        $event
-            ->expects(static::once())
-            ->method('setResponse')
-            ->with(static::callback(function (JsonResponse $response) use ($dataJson, $statusCode, $headers) {
-                return
-                    $response instanceof JsonResponse &&
-                    $response->getContent() === $dataJson &&
-                    $response->getStatusCode() === $statusCode &&
-                    array_keys(array_intersect_key($response->headers->all(), $headers)) === array_keys($headers);
-            }));
-
         $subscriber = new JsonResponseSerializerSubscriber($this->serializer);
         $subscriber->serializeJsonResponse($event);
+
+        $response = $event->getResponse();
+        static::assertInstanceOf(JsonResponse::class, $response);
+        static::assertEquals($dataJson, $response->getContent());
+        static::assertEquals($statusCode, $response->getStatusCode());
+        static::assertEquals(array_keys(array_intersect_key($response->headers->all(), $headers)), array_keys($headers));
+    }
+
+    private function getViewEvent($controllerResult): ViewEvent
+    {
+        return new ViewEvent(
+            $this->createMock(HttpKernelInterface::class),
+            new Request(),
+            0,
+            $controllerResult
+        );
     }
 }
