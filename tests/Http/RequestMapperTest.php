@@ -98,6 +98,9 @@ class RequestMapperTest extends KernelTestCase
     public function testSerializationErrorTranslatesToBadRequestHttpException(): void
     {
         $request = $this->createMock(Request::class);
+        $request
+            ->method('getRequestFormat')
+            ->willReturn('json');
 
         $this->serializer
             ->expects(static::once())
