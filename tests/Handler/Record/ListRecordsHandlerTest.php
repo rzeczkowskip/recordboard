@@ -71,7 +71,7 @@ class ListRecordsHandlerTest extends TestCase
 
         $this->recordRepository
             ->expects(static::once())
-            ->method('getRecords')
+            ->method('searchRecords')
             ->with(static::callback(function (ListSearchCriteria $searchCriteria) use ($exercise, $itemsPerPage, $queryOffset) {
                 return $searchCriteria->getExercise() === $exercise &&
                     $searchCriteria->getQueryLimit() === $itemsPerPage &&
