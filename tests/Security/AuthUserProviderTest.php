@@ -6,11 +6,9 @@ use App\Security\AuthUser;
 use App\Security\AuthUserProvider;
 use Doctrine\ORM\NoResultException;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
-use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class AuthUserProviderTest extends TestCase
 {
@@ -31,7 +29,7 @@ class AuthUserProviderTest extends TestCase
 
     public function testLoadUserByUsername(): void
     {
-        $id = Uuid::uuid4();
+        $id = uuid_v4();
         $email = 'admin@example.com';
         $password = 'secret';
 
@@ -50,7 +48,7 @@ class AuthUserProviderTest extends TestCase
         $result = $provider->loadUserByUsername($email);
 
         static::assertInstanceOf(AuthUser::class, $result);
-        static::assertEquals($id->toString(), $result->getUsername());
+        static::assertEquals($id, $result->getUsername());
         static::assertEquals($password, $result->getPassword());
     }
 
@@ -69,7 +67,7 @@ class AuthUserProviderTest extends TestCase
 
     public function testRefreshUser(): void
     {
-        $id = Uuid::uuid4();
+        $id = uuid_v4();
         $user = new AuthUser($id, '');
 
         $provider = $this->createPartialMock(AuthUserProvider::class, ['loadUserByUsername']);
@@ -77,7 +75,7 @@ class AuthUserProviderTest extends TestCase
         $provider
             ->expects(static::once())
             ->method('loadUserByUsername')
-            ->with($id->toString())
+            ->with($id)
             ->willReturn($user);
 
         $result = $provider->refreshUser($user);

@@ -6,8 +6,6 @@ use App\Entity\User;
 use App\Security\AuthUser;
 use App\Security\Voter\ExerciseRecordsVoter;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\VoterInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -49,7 +47,7 @@ class ExerciseRecordsVoterTest extends TestCase
         ];
 
         yield 'user has no access' => [
-            new AuthUser(Uuid::uuid4(), ''),
+            new AuthUser(uuid_v4(), ''),
             $exercise,
             ['EXERCISE_RECORDS_LIST'],
             VoterInterface::ACCESS_DENIED,
