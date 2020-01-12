@@ -7,8 +7,6 @@ use App\Repository\ExerciseRepository;
 use App\Validator\Constraints\ExerciseChoice;
 use App\Validator\Constraints\ExerciseChoiceValidator;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\Validator\Constraints\Choice;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -48,32 +46,30 @@ class ExerciseChoiceValidatorTest extends TestCase
     }
 
     /**
-     * @param UuidInterface|null $user
+     * @param string|null $user
      *
      * @dataProvider userProvider
      */
-    public function testValidate(?UuidInterface $user = null): void
+    public function testValidate(?string $user = null): void
     {
         $object = new class($user) {
-            public ?UuidInterface $user;
+            public ?string $user;
 
-            public function __construct(?UuidInterface $user = null)
+            public function __construct(?string $user = null)
             {
                 $this->user = $user;
             }
         };
         $constraint = new ExerciseChoice(['user' => $user ? 'user' : null]);
 
-        $id = Uuid::uuid4();
+        $id = uuid_v4();
         $exercise = new Exercise($id, '', []);
 
-        $expectedChoices = [
-            $id->toString()
-        ];
+        $expectedChoices = [$id];
 
         $this->exerciseRepository
             ->expects(static::once())
-            ->method('getExercisesList')
+            ->method('getList')
             ->with($user)
             ->willReturn([$exercise]);
 
@@ -97,7 +93,7 @@ class ExerciseChoiceValidatorTest extends TestCase
 
     public function userProvider(): \Generator
     {
-        yield 'with user' => [Uuid::uuid4()];
+        yield 'with user' => [uuid_v4()];
         yield 'without user' => [null];
     }
 }

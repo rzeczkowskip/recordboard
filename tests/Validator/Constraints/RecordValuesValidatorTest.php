@@ -8,8 +8,6 @@ use App\Repository\ExerciseRepository;
 use App\Validator\Constraints\RecordValues;
 use App\Validator\Constraints\RecordValuesValidator;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
-use Ramsey\Uuid\UuidInterface;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -81,11 +79,11 @@ class RecordValuesValidatorTest extends TestCase
 
     public function testSkipValidationIfNoExerciseAvailable(): void
     {
-        $exerciseId = Uuid::uuid4();
+        $exerciseId = uuid_v4();
 
         $constraint = new RecordValues();
         $object = new class {
-            public UuidInterface $exercise;
+            public string $exercise;
         };
         $object->exercise = $exerciseId;
 
@@ -114,7 +112,7 @@ class RecordValuesValidatorTest extends TestCase
 
     public function testPassValidationToCollectionValidator(): void
     {
-        $exerciseId = Uuid::uuid4();
+        $exerciseId = uuid_v4();
         $attributes = ['rep', 'time'];
         $exercise = new Exercise(
             new User('', '', ''),
@@ -123,7 +121,7 @@ class RecordValuesValidatorTest extends TestCase
 
         $constraint = new RecordValues();
         $object = new class {
-            public UuidInterface $exercise;
+            public string $exercise;
         };
         $object->exercise = $exerciseId;
 
