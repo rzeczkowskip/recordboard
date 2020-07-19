@@ -13,7 +13,7 @@
     "bulma-block-list": "^0.1.1",
     "bulmaswatch": "^0.7.5",
     "core-js": "^2.6.5",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "rfs": "^9.0.0",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3",
